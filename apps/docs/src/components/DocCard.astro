@@ -1,0 +1,17 @@
+---
+import Card from '@astrojs/starlight/components/Card.astro';
+import CardGrid from '@astrojs/starlight/components/CardGrid.astro';
+
+export interface Props {
+  title: string;
+  icon?: string;
+  description?: string;
+}
+
+const { title, icon, description } = Astro.props;
+---
+
+<Card title={title} icon={icon}>
+  {description && <p>{description}</p>}
+  <slot />
+</Card>

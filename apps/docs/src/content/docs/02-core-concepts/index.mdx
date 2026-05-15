@@ -1,0 +1,374 @@
+---
+title: "Основные концепции FDA"
+description: "Фрактальность, разделение на слои и явные контракты — три кита FDA"
+---
+
+# Основные концепции FDA
+
+---
+
+## 🌀 Фрактальность
+
+**Фрактальность** — это принцип, при котором структура на одном уровне повторяется на всех других уровнях.
+
+### Масштабы фрактальности в FDA:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     APPLICATION LEVEL                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
+│  │   module1   │  │   module2   │  │   auth      │         │
+│  │  ┌─────────┐│  │  ┌─────────┐│  │  ┌─────────┐│         │
+│  │  │ model   ││  │  │ model   ││  │  │ model   ││         │
+│  │  │ repo    ││  │  │ repo    ││  │  │ repo    ││         │
+│  │  │ rpc     ││  │  │ rpc     ││  │  │ rpc     ││         │
+│  │  └─────────┘│  │  └─────────┘│  │  └─────────┘│         │
+│  └─────────────┘  └─────────────┘  └─────────────┘         │
+└─────────────────────────────────────────────────────────────┘
+                         ↓ (same structure)
+┌─────────────────────────────────────────────────────────────┐
+│                      MODULE LEVEL                           │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  <module>                                            │   │
+│  │  ┌────────────────────────────────────────────────┐  │   │
+│  │  │  +page.svelte (+layout.svelte)                 │  │   │
+│  │  │  +page.server.ts (+layout.server.ts)           │  │   │
+│  │  │  rpc.ts                                        │  │   │
+│  │  │  model.server.ts                               │  │   │
+│  │  │  controller.ts / stores.ts                     │  │   │
+│  │  │  policy.ts                                     │  │   │
+│  │  │  utils.ts                                      │  │   │
+│  │  │  types.ts                                      │  │   │
+│  │  │  templates.ts                                  │  │   │
+│  │  │  constants.ts                                  │  │   │
+│  │  │  index.ts                                      │  │   │
+│  │  │  ui/                                           │  │   │
+│  │  └────────────────────────────────────────────────┘  │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                         ↓ (same structure)
+┌─────────────────────────────────────────────────────────────┐
+│                   SUBMODULE LEVEL                           │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  _<submodule> (internal only)                      │   │
+│  │  <submodule> (page + internal)                     │   │
+│  │  [same structure as module level]                  │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Практический пример:
+
+```
+src/
+├── lib/                      # Фреймворк-agnostic код
+│   ├── server/               # Серверные утилиты
+│   │   └── repo/             # Внешние источники
+│   │       ├── db/           # База данных
+│   │       ├── redis/        # Кэш
+│   │       ├── vault/        # Секреты
+│   │       └── keto/          # Авторизация
+│   ├── universal/            # Общий код
+│   └── stores/               # Глобальное состояние
+│       ├── navigation.ts
+│       ├── user.ts
+│       └── theme.ts
+│
+└── routes/                   # Framework-specific pages
+    └── (auth)/
+        ├── login/
+        │   ├── +page.svelte
+        │   ├── +page.server.ts
+        │   ├── rpc.ts
+        │   ├── model.server.ts
+        │   ├── controller.ts
+        │   └── index.ts
+        └── profile/
+            └── [id]/         # Динамические роуты
+                ├── +page.svelte
+                └── index.ts
+```
+
+---
+
+## 📊 Слоистая архитектура (Layered Architecture)
+
+Каждый домен/модуль имеет **строгое разделение на слои**:
+
+```mermaid
+graph TB
+    subgraph "UI Layer"
+        UI[Components]
+        Toast[Toast functions]
+    end
+    
+    subgraph "Controller Layer"
+        CNTL[Controller / Stores]
+    end
+    
+    subgraph "Model Layer"
+        MODEL[Model / Schema]
+        RPC[RPC Logic]
+    end
+    
+    subgraph "Repository Layer"
+        DB[(Database)]
+        REDIS[(Redis)]
+        VAULT[(Vault)]
+        KETO[(Keto)]
+    end
+    
+    UI --> CNTL
+    CNTL --> MODEL
+    MODEL --> RPC
+    RPC --> DB
+    RPC --> REDIS
+    RPC --> VAULT
+    RPC --> KETO
+    
+    style DB fill:#fca5a5,stroke:#b91c1c
+    style REDIS fill:#fdba74,stroke:#c2410c
+    style VAULT fill:#fcd34d,stroke:#d97706
+    style KETO fill:#fde047,stroke:#ca8a04
+```
+
+### Ответственность каждого слоя:
+
+| Слой | Файлы | Ответственность | Запреты |
+|------|-------|-----------------|---------|
+| **UI** | `+page.svelte`, `ui/` | Отображение, пользовательский ввод | Нет прямых импортов `repo/*` |
+| **Controller** | `controller.ts`, `stores.ts` | Управление состоянием, реактивность | Нет прямых импортов внешних источников |
+| **Model** | `model.server.ts`, `schema.ts` | Логика работы с данными | Нет UI-логики |
+| **RPC** | `rpc.ts` | Бизнес-логика, API между модулями | Нет прямых импортов UI |
+| **Repo** | `server/repo/*` | Подключение к внешним источникам | Нет бизнес-логики |
+
+---
+
+## 📄 Явные контракты (File Contracts)
+
+Каждый файл имеет **строго определённую роль и набор экспортов**:
+
+### ✅ Что экспортирует каждый файл:
+
+#### `schema.ts` (ONLY in Drizzle ORM)
+```typescript
+// Строго: только схемы для ORM
+// Никакой логики, только таблицы/колонки
+export const users = pgTable(...)
+export const posts = pgTable(...)
+```
+
+#### `model.server.ts`
+```typescript
+// Логика работы с данными через repo
+// Экспортирует CRUD операции, валидацию, транзакции
+export const getUserById = async (id: string) => { ... }
+export const createUser = async (data: CreateUserInput) => { ... }
+```
+
+#### `rpc.ts`
+```typescript
+// Бизнес-логика модуля/сабмодуля
+// Экспортирует API endpoints для других модулей
+export const authenticateUser = async (credentials: Credentials) => { ... }
+export const generateToken = async (userId: string) => { ... }
+```
+
+#### `controller.ts` / `stores.ts`
+```typescript
+// Работа с UI-состоянием
+// Экспортирует реактивные stores и утилиты для UI
+export const userStore = derived(...)
+export const navigateToProfile = (userId: string) => { ... }
+```
+
+#### `policy.ts`
+```typescript
+// Описание политик авторизации
+// Экспортирует правила доступа
+export const canEditUser = (user: User, target: User) => { ... }
+export const policy = { ... }
+```
+
+#### `utils.ts`
+```typescript
+// Вспомогательные функции модуля
+// Экспортирует утилиты, не подходящие в другие категории
+export const formatUserDisplay = (user: User) => { ... }
+```
+
+#### `constants.ts`
+```typescript
+// Константы и enum
+// Экспортирует только const/enum
+export const USER_ROLES = { ADMIN: 'admin', USER: 'user' }
+export const MAX_UPLOAD_SIZE = 1024 * 1024 * 5
+```
+
+#### `templates.ts`
+```typescript
+// Шаблоны форм и состояний
+// Экспортирует структуры для formik/yup или аналогов
+export const userFormSchema = object({ ... })
+export const initialFormState = { ... }
+```
+
+#### `types.ts`
+```typescript
+// Типы и интерфейсы
+// Экспортирует только type/interface
+export interface User { ... }
+export type AuthResult = { success: boolean; message?: string }
+```
+
+#### `index.ts`
+```typescript
+// Центральный экспорт модуля
+// Экспортирует все экспортируемые API
+export * from './model.server'
+export * from './rpc'
+export * from './controller'
+export * from './constants'
+export * from './types'
+```
+
+---
+
+## 🔄 Dependency Flow (Направление зависимостей)
+
+```mermaid
+graph LR
+    subgraph "UI Layer"
+        P[+page.svelte]
+        UI[ui/ components]
+    end
+    
+    subgraph "Controller Layer"
+        CNTL[controller.ts / stores.ts]
+    end
+    
+    subgraph "Model Layer"
+        MODEL[model.server.ts]
+        SCHEMA[schema.ts]
+        RPC[rpc.ts]
+    end
+    
+    subgraph "Repository Layer"
+        DB[(server/repo/db)]
+        REDIS[(server/repo/redis)]
+        VAULT[(server/repo/vault)]
+        KETO[(server/repo/keto)]
+    end
+    
+    P --> CNTL
+    UI --> CNTL
+    CNTL --> MODEL
+    CNTL --> RPC
+    MODEL --> SCHEMA
+    MODEL --> DB
+    RPC --> DB
+    RPC --> REDIS
+    RPC --> VAULT
+    RPC --> KETO
+    
+    style P fill:#f0f9ff,stroke:#0ea5e9
+    style UI fill:#f0f9ff,stroke:#0ea5e9
+    style CNTL fill:#f0f9ff,stroke:#0ea5e9
+    style MODEL fill:#e0f2fe,stroke:#0284c7
+    style RPC fill:#e0f2fe,stroke:#0284c7
+    style SCHEMA fill:#e0f2fe,stroke:#0284c7
+    style DB fill:#fee2e2,stroke:#ef4444
+    style REDIS fill:#ffedd5,stroke:#ea580c
+    style VAULT fill:#fef3c7,stroke:#ca8a04
+    style KETO fill:#fefce8,stroke:#854d0e
+```
+
+### 🚫 Запрещённые импорты:
+
+```
+❌ UI → repo/* (должно идти через model/controller)
+❌ UI → rpc/* (должно идти через controller)
+❌ UI → model.server/* (должно идти через controller)
+❌ Controller → ui/* (UI не должен зависеть от бизнес-логики)
+❌ Model → UI (модель не знает про UI)
+❌ Model → controller (модель не знает про состояние)
+```
+
+### ✅ Правильные импорты:
+
+```
+✅ UI → controller (UI использует stores и утилиты)
+✅ Controller → model (контроллер управляет данными)
+✅ Controller → rpc (контроллер вызывает бизнес-логику)
+✅ Model → repo (модель работает с источниками данных)
+✅ RPC → model (RPC использует модель)
+✅ RPC → repo (RPC работает с источниками)
+```
+
+---
+
+## 🏗️ Framework-agnostic vs Framework-specific
+
+### FDA разделяет код на два уровня:
+
+| Уровень | Путь | Описание |
+|---------|------|----------|
+| **Framework-agnostic** | `src/lib/*` | Код, не зависящий от фреймворка (реиспользуемый) |
+| **Framework-specific** | `src/routes/*` | Код, специфичный для Astro/SvelteKit/React |
+
+### Маппинг на другие фреймворки:
+
+```mermaid
+graph LR
+    subgraph "FDA Structure"
+        F1[lib/server/repo]
+        F2[lib/universal/stores]
+        F3[routes/module]
+    end
+    
+    subgraph "SvelteKit"
+        S1[lib/server/repo]
+        S2[lib/universal/stores]
+        S3[src/routes/module]
+    end
+    
+    subgraph "React"
+        R1[src/lib/server/repo]
+        R2[src/lib/universal/stores]
+        R3[src/pages/module]
+    end
+    
+    subgraph "Vue"
+        V1[src/lib/server/repo]
+        V2[src/lib/universal/stores]
+        V3[src/pages/module]
+    end
+    
+    F1 -.-> S1 & R1 & V1
+    F2 -.-> S2 & R2 & V2
+    F3 -.-> S3 & R3 & V3
+    
+    style F1 fill:#10b981,stroke:#059669,color:#fff
+    style F2 fill:#10b981,stroke:#059669,color:#fff
+    style F3 fill:#10b981,stroke:#059669,color:#fff
+```
+
+### Примеры маппинга:
+
+| FDA | SvelteKit | React | Vue |
+|-----|-----------|-------|-----|
+| `routes/+page.svelte` | `src/routes/+page.svelte` | `src/pages/...tsx` | `src/pages/...vue` |
+| `routes/+page.server.ts` | `src/routes/+page.server.ts` | `src/routes/.../action.ts` | `src/pages/.../setup.ts` |
+| `routes/rpc.ts` | `src/routes/module/rpc.ts` | `src/pages/.../rpc.ts` | `src/pages/.../rpc.ts` |
+| `lib/stores/user.ts` | `src/lib/stores/user.ts` | `src/lib/stores/user.ts` | `src/lib/stores/user.ts` |
+| `lib/server/repo/db.ts` | `src/lib/server/repo/db.ts` | `src/lib/server/repo/db.ts` | `src/lib/server/repo/db.ts` |
+
+---
+
+## 🔗 Следующие шаги
+
+→ [Структура проекта](/03-project-structure) — детальное описание путей и конвенций
+
+→ [Домены и подмодули](/04-domains-submodules) — фрактальная организация кода
+
+→ [Контракты файлов](/05-file-contracts) — полный список обязательных и опциональных файлов

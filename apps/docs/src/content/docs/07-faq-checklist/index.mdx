@@ -1,0 +1,340 @@
+---
+title: "FAQ и Checklist"
+description: "Частые вопросы и проверка правильности реализации"
+---
+
+# FAQ и Checklist
+
+---
+
+## ❓ Частые вопросы
+
+### 1. Где хранить schema.ts?
+
+**Вопрос:** Должен ли `schema.ts` быть в `model.server.ts` или отдельно?
+
+**Ответ:** `schema.ts` — **только в Drizzle ORM** и только для описания таблиц:
+
+```typescript
+// src/lib/server/repo/db/schema.ts
+import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+
+export const users = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: text('email').unique().notNull(),
+  name: text('name').notNull(),
+  passwordHash: text('password_hash').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+```
+
+**НЕ так:**
+```typescript
+// ❌ Плохо
+export const users = pgTable(...)
+export const getUserById = async (id: string) => { ... }
+```
+
+---
+
+### 2. Что использовать: controller.ts или stores.ts?
+
+**Ответ:** Это **одно и то же**. Используйте `controller.ts` для:
+- Управления состоянием через stores
+- Вызова RPC и model
+- Утилит для UI
+
+```
+controller.ts = stores.ts + utils
+```
+
+---
+
+### 3. Нужен ли `index.ts` в каждом модуле?
+
+**Ответ:** **Да, обязательно!** Он обеспечивает централизованный экспорт:
+
+```typescript
+// ✅ Правильно
+import { getProducts } from './products/index'
+
+// ❌ Плохо
+import { getProducts } from './products/model.server'
+import { loadProducts } from './products/controller'
+```
+
+---
+
+### 4. Как организовать папку `ui/`?
+
+**Ответ:** `ui/` — это **внутренние** UI компоненты модуля:
+
+```
+dashboard/
+├── ui/
+│   ├── Dashboard.svelte      # Главная компонента
+│   ├── StatsCard.svelte      # Промежуточная компонента
+│   └── Toast.svelte          # Экспорт функций
+│
+└── _shared/                  # Или shared/ для переиспользуемых
+    └── Button.svelte
+```
+
+**Если компонент переиспользуется в других модулях — вынесите в `packages/ui/`.**
+
+---
+
+### 5. Можно ли использовать `+layout.server.ts` без `+layout.svelte`?
+
+**Ответ:** **Нет.** Если есть `+layout.server.ts`, нужен и `+layout.svelte`.
+
+---
+
+### 6. Где хранить глобальные stores?
+
+**Ответ:** В `lib/universal/stores/`:
+
+```
+src/lib/universal/stores/
+├── navigation.ts
+├── user.ts
+├── theme.ts
+└── toast.ts
+```
+
+---
+
+### 7. Как организовать общий API между модулями?
+
+**Ответ:** Используйте `rpc.ts` в каждом модуле:
+
+```typescript
+// modules/products/rpc.ts
+export const getProductById: Rpc<'products/getById'> = async ({ id }) => { ... }
+
+// modules/orders/controller.ts
+import { getProductById } from '../products/rpc'
+
+export const createOrder = async (productId: string) => {
+  const product = await getProductById({ id: productId })
+  // ...
+}
+```
+
+---
+
+### 8. Нужен ли `+page.server.ts` для каждой страницы?
+
+**Ответ:** **Да, обязательно.** Даже если пустой:
+
+```typescript
+// +page.server.ts
+import type { PageServerLoad } from './$types'
+
+export const load: PageServerLoad = async () => {
+  return {}
+}
+```
+
+---
+
+### 9. Как обрабатывать формы?
+
+**Ответ:** Через `actions` в `+page.server.ts`:
+
+```typescript
+export const actions: Actions = {
+  submit: async ({ request }) => {
+    const formData = await request.formData()
+    const name = formData.get('name') as string
+    
+    if (!name) {
+      return fail(400, { error: 'Name is required' })
+    }
+    
+    // Создание
+    return { success: true }
+  },
+}
+```
+
+---
+
+### 10. Как организовать динамические роуты?
+
+**Ответ:** Используйте `[id]/`:
+
+```
+products/
+└── [id]/
+    ├── +page.svelte
+    └── index.ts
+```
+
+---
+
+## ✅ Checklist при создании модуля
+
+### Базовая структура:
+
+- [ ] `+page.svelte` создан
+- [ ] `+layout.svelte` создан
+- [ ] `+page.server.ts` создан (с `actions` и `load`)
+- [ ] `+layout.server.ts` создан (если нужен)
+- [ ] `rpc.ts` создан (с API для других модулей)
+- [ ] `model.server.ts` создан (с CRUD операциями)
+- [ ] `controller.ts` создан (с stores и утилитами)
+- [ ] `index.ts` создан (с экспортами)
+
+### Проверка контрактов:
+
+- [ ] `schema.ts` — только схемы (если Drizzle)
+- [ ] `rpc.ts` — только RPC функции
+- [ ] `model.server.ts` — только CRUD и валидация
+- [ ] `controller.ts` — только stores и утилиты
+- [ ] `policy.ts` — только политики доступа
+- [ ] `utils.ts` — только утилиты модуля
+- [ ] `types.ts` — только типы
+- [ ] `templates.ts` — только шаблоны
+- [ ] `constants.ts` — только константы
+- [ ] `ui/` — только UI компоненты модуля
+
+### Проверка зависимостей:
+
+- [ ] UI не импортирует `repo/*` напрямую
+- [ ] UI не импортирует `rpc/*` напрямую
+- [ ] UI не импортирует `model.server/*` напрямую
+- [ ] Controller не импортирует `ui/*`
+- [ ] Model не импортирует `ui/*`
+- [ ] RPC не импортирует `ui/*`
+
+### Проверка exports:
+
+- [ ] `+page.server.ts` экспортирует `load` и `actions`
+- [ ] `+layout.server.ts` экспортирует `load`
+- [ ] `rpc.ts` экспортирует RPC функции
+- [ ] `model.server.ts` экспортирует CRUD функции
+- [ ] `controller.ts` экспортирует stores и утилиты
+- [ ] `index.ts` экспортирует всё API
+
+---
+
+## 🚨 Common mistakes
+
+### Mistake 1: UI → repo (прямой импорт)
+
+```typescript
+// ❌ Плохо
+<script>
+  import { db } from '$lib/server/repo/db/client'
+  import { products } from '$lib/server/repo/db/schema'
+  
+  let products = []
+  
+  onMount(async () => {
+    products = await db.query.products.findMany()
+  })
+</script>
+```
+
+**Исправление:**
+```typescript
+// ✅ Хорошо
+<script>
+  import { productsStore, loadProducts } from './controller'
+  
+  $: products = $productsStore
+  
+  onMount(() => {
+    loadProducts()
+  })
+</script>
+```
+
+---
+
+### Mistake 2: Нет `index.ts`
+
+```typescript
+// ❌ Плохо
+// В другом модуле
+import { getProducts } from './products/model.server'
+import { loadProducts } from './products/controller'
+```
+
+**Исправление:**
+```typescript
+// ✅ Хорошо
+// products/index.ts
+export * from './model.server'
+export * from './rpc'
+export * from './controller'
+export * from './types'
+
+// В другом модуле
+import { getProducts, loadProducts } from './products/index'
+```
+
+---
+
+### Mistake 3: RPC вызывается из UI
+
+```typescript
+// ❌ Плохо
+<script>
+  import { authenticateUser } from './rpc'
+  
+  const login = async (email, password) => {
+    const result = await authenticateUser({ email, password })
+    // ...
+  }
+</script>
+```
+
+**Исправление:**
+```typescript
+// ✅ Хорошо
+<script>
+  import { login } from './controller'
+  
+  const handleLogin = async (email, password) => {
+    await login(email, password)
+  }
+</script>
+```
+
+---
+
+### Mistake 4: Mixed responsibilities
+
+```typescript
+// ❌ Плохо (model.server.ts)
+export const getProducts = async () => { ... }
+export const showToast = () => { ... }  // UI логика!
+```
+
+**Исправление:**
+```typescript
+// ✅ Хорошо (model.server.ts)
+export const getProducts = async () => { ... }
+
+// ✅ Хорошо (controller.ts)
+export const showToast = () => { ... }
+```
+
+---
+
+## 🔗 Полезные ссылки
+
+- [Основные концепции](/02-core-concepts)
+- [Структура проекта](/03-project-structure)
+- [Домены и подмодули](/04-domains-submodules)
+- [Контракты файлов](/05-file-contracts)
+- [Data Flow](/06-data-flow)
+
+---
+
+## 📞 Поддержка
+
+Если у вас остались вопросы — создайте issue в репозитории проекта.

@@ -1,0 +1,178 @@
+:root {
+  /* Font */
+  --sl-font: "Space Grotesk Variable", sans-serif;
+  --sl-font-system-mono: "Space Mono", monospace;
+}
+
+/* Change font & remove ligatures for all code & the file tree */
+.expressive-code,
+pre,
+.expressive-code pre > code,
+code,
+starlight-file-tree {
+  font-family: "Space Mono", monospace !important;
+  font-variant-ligatures: none !important;
+}
+
+/* FDA Styles */
+.docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.doc-card {
+  display: block;
+  padding: 1.5rem;
+  border: 1px solid var(--sl-color-border);
+  border-radius: var(--sl-radius-medium);
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.doc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.doc-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.doc-card p {
+  margin: 0;
+  color: var(--sl-color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.examples-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.example-card {
+  display: block;
+  padding: 1.5rem;
+  border: 1px solid var(--sl-color-border);
+  border-radius: var(--sl-radius-medium);
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.example-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.example-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.example-card p {
+  margin: 0;
+  color: var(--sl-color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--sl-radius-small);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.badge[data-color="green"] {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge[data-color="yellow"] {
+  background: #fef08a;
+  color: #854d0e;
+}
+
+.badge[data-color="red"] {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Mermaid Diagram Styles */
+.mermaid {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Table Styles */
+table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--sl-color-border);
+  text-align: left;
+}
+
+th {
+  background: var(--sl-color-bg-alt);
+  font-weight: 600;
+}
+
+/* Code Block Styles */
+code {
+  background: var(--sl-color-bg-inline-code);
+  padding: 0.2em 0.4em;
+  border-radius: var(--sl-radius-small);
+  font-size: 0.9em;
+}
+
+pre {
+  background: var(--sl-color-bg(code));
+  border-radius: var(--sl-radius-medium);
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+/* Callout Styles */
+.callout {
+  padding: 1rem;
+  border-left: 4px solid;
+  border-radius: var(--sl-radius-small);
+  margin: 1rem 0;
+}
+
+.callout-info {
+  background: #f0f9ff;
+  border-color: #0ea5e9;
+}
+
+.callout-warning {
+  background: #fffbeb;
+  border-color: #d97706;
+}
+
+.callout-error {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.callout-success {
+  background: #f0fdf4;
+  border-color: #22c55e;
+}

@@ -1,0 +1,730 @@
+---
+title: "Контракты файлов"
+description: "Строгое определение ролей и экспортов для каждого файла"
+---
+
+# Контракты файлов
+
+---
+
+## 📋 Обязательные файлы (REQUIRED)
+
+### `+page.svelte`
+
+**Обязательный** файл для каждой страницы модуля.
+
+#### Роль:
+- Отображение страницы модуля
+- Подключение UI компонентов
+- Использование контроллеров для состояния
+
+#### Экспорты:
+```typescript
+export let data: PageData  // Данные от +page.server.ts
+```
+
+#### Запреты:
+- ❌ Нет прямого импорта `repo/*`
+- ❌ Нет прямого импорта `rpc/*` (только через контроллер)
+
+#### Пример:
+
+```svelte
+<script lang="ts">
+  import { PageTitle } from './ui'
+  import { userStore, isLoading } from './controller'
+  import { formatCurrency } from './utils'
+  
+  export let data: PageData
+  
+  $: ({ items } = data)
+</script>
+
+<PageTitle>Products</PageTitle>
+
+{#if $isLoading}
+  <LoadingSpinner />
+{:else}
+  <div class="products-list">
+    {#each $items as item}
+      <ProductCard
+        title={item.name}
+        price={formatCurrency(item.price)}
+      />
+    {/each}
+  </div>
+{/if}
+```
+
+---
+
+### `+layout.svelte`
+
+**Обязательный** файл для layout модуля.
+
+#### Роль:
+- Обёртка для всех страниц модуля
+- Общие компоненты layout
+- Проверка авторизации
+
+#### Экспорты:
+```typescript
+export let data: LayoutData  // Данные от +layout.server.ts
+export let children  // Вложенный контент
+```
+
+#### Запреты:
+- ❌ Нет прямого импорта `repo/*`
+- ❌ Нет прямого импорта `rpc/*`
+
+#### Пример:
+
+```svelte
+<script lang="ts">
+  import { Header, Sidebar, Footer } from '../ui'
+  
+  export let data: LayoutData
+  export let children
+</script>
+
+<div class="layout">
+  <Header title={data.title} />
+  <Sidebar />
+  <main>
+    {children}
+  </main>
+  <Footer />
+</div>
+```
+
+---
+
+### `+page.server.ts`
+
+**Обязательный** файл для actions и load.
+
+#### Роль:
+- Загрузка начального состояния (`load`)
+- Обработка форм (`actions`)
+- Проверка авторизации
+
+#### Экспорты:
+```typescript
+export const load: PageServerLoad = async ({ locals }) => { ... }
+export const actions: Actions = { ... }
+```
+
+#### Запреты:
+- ❌ Нет UI-логики
+- ❌ Нет импортов `ui/*`
+
+#### Пример:
+
+```typescript
+import { db } from '$lib/server/repo/db/client'
+import { products } from '$lib/server/repo/db/schema'
+import { fail } from '@sveltejs/kit'
+import type { Actions, PageServerLoad } from './$types'
+
+export const load: PageServerLoad = async ({ locals }) => {
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, locals.user.id),
+  })
+  
+  if (!user) {
+    throw redirect(302, '/login')
+  }
+  
+  const items = await db.query.products.findMany()
+  
+  return { user, items }
+}
+
+export const actions: Actions = {
+  createProduct: async ({ request, locals }) => {
+    const formData = await request.formData()
+    const name = formData.get('name') as string
+    const price = Number(formData.get('price'))
+    
+    if (!name || !price) {
+      return fail(400, { error: 'All fields are required' })
+    }
+    
+    await db.insert(products).values({
+      name,
+      price,
+      ownerId: locals.user.id,
+    })
+    
+    return { success: true }
+  },
+}. satisfies Actions
+```
+
+---
+
+### `+layout.server.ts`
+
+**Опциональный** файл для load layout.
+
+#### Роль:
+- Загрузка данных для layout
+- Проверка доступа к модулю
+
+#### Экспорты:
+```typescript
+export const load: LayoutLoad = async ({ parent }) => { ... }
+```
+
+#### Пример:
+
+```typescript
+import type { LayoutLoad } from './$types'
+
+export const load: LayoutLoad = async ({ parent }) => {
+  const { user } = await parent()
+  
+  if (!user) {
+    throw redirect(302, '/login')
+  }
+  
+  return { title: 'Dashboard', user }
+}
+```
+
+---
+
+### `rpc.ts`
+
+**Обязательный** файл для API между модулями.
+
+#### Роль:
+- Бизнес-логика модуля
+- API endpoints для других модулей
+- Инкапсуляция работы с данными
+
+#### Экспорты:
+```typescript
+export const rpcName: Rpc<'module/rpcName'> = async ({ args }) => { ... }
+```
+
+#### Запреты:
+- ❌ Нет UI-логики
+- ❌ Нет прямого импорта `ui/*`
+- ❌ Нет прямого импорта `controller/*`
+
+#### Пример:
+
+```typescript
+import { db } from '$lib/server/repo/db/client'
+import { products, categories } from '$lib/server/repo/db/schema'
+import { eq, and } from 'drizzle-orm'
+import type { Rpc } from '$lib/universal/types'
+
+export const getProductsByCategory: Rpc<'products/getByCategory'> = async ({ categoryId, limit = 10 }) => {
+  const productsList = await db.query.products.findMany({
+    where: and(
+      eq(products.categoryId, categoryId),
+      eq(products.published, true)
+    ),
+    limit,
+    orderBy: [products.createdAt.desc()],
+  })
+  
+  return { products: productsList }
+}
+
+export const getProductsSearch: Rpc<'products/search'> = async ({ query, limit = 10 }) => {
+  const productsList = await db.query.products.findMany({
+    where: like(products.name, `%${query}%`),
+    limit,
+    orderBy: [products.createdAt.desc()],
+  })
+  
+  return { products: productsList }
+}
+```
+
+---
+
+### `model.server.ts`
+
+**Обязательный** файл для логики работы с данными.
+
+#### Роль:
+- CRUD операции
+- Валидация
+- Транзакции
+- Работа с repo
+
+#### Экспорты:
+```typescript
+export const operationName = async (args): Promise<Result> => { ... }
+```
+
+#### Запреты:
+- ❌ Нет UI-логики
+- ❌ Нет прямого импорта `ui/*`
+- ❌ Нет прямого импорта `controller/*`
+- ❌ Нет прямого импорта `rpc/*`
+
+#### Пример:
+
+```typescript
+import { db } from '$lib/server/repo/db/client'
+import { products, categories, reviews } from '$lib/server/repo/db/schema'
+import { eq, and, desc } from 'drizzle-orm'
+import type { Product, CreateProductInput } from './types'
+
+export const getProducts = async (): Promise<Product[]> => {
+  return await db.query.products.findMany({
+    orderBy: [products.createdAt.desc()],
+  })
+}
+
+export const getProductById = async (id: string): Promise<Product | null> => {
+  return await db.query.products.findFirst({
+    where: eq(products.id, id),
+  })
+}
+
+export const createProduct = async (
+  data: CreateProductInput
+): Promise<Product> => {
+  const [product] = await db
+    .insert(products)
+    .values(data)
+    .returning()
+  
+  return product
+}
+
+export const updateProduct = async (
+  id: string,
+  data: Partial<Product>
+): Promise<Product> => {
+  const [product] = await db
+    .update(products)
+    .set(data)
+    .where(eq(products.id, id))
+    .returning()
+  
+  return product
+}
+
+export const deleteProduct = async (id: string): Promise<void> => {
+  await db.delete(products).where(eq(products.id, id))
+}
+
+export const getProductsByCategory = async (
+  categoryId: string
+): Promise<Product[]> => {
+  return await db.query.products.findMany({
+    where: eq(products.categoryId, categoryId),
+  })
+}
+```
+
+---
+
+### `controller.ts` / `stores.ts`
+
+**Обязательный** файл для управления состоянием.
+
+#### Роль:
+- Управление реактивным состоянием
+- Вызов rpc и model
+- Утилиты для UI
+
+#### Экспорты:
+```typescript
+export const store: Writable<State> = writable(initialState)
+export const operationName = async (args): Promise<void> => { ... }
+```
+
+#### Запреты:
+- ❌ Нет прямого импорта `repo/*`
+- ❌ Нет прямого импорта `rpc/*` (только через model)
+- ❌ Нет прямого импорта `ui/*`
+
+#### Пример:
+
+```typescript
+import { derived, writable, type Writable } from 'svelte/store'
+import { getProductsByCategory, createProduct } from './model.server'
+import { getProductsByCategory as getProductsByCategoryRpc } from './rpc'
+import type { Product } from './types'
+
+export const productsStore: Writable<Product[]> = writable([])
+export const selectedCategory: Writable<string | null> = writable(null)
+export const isLoading = writable(false)
+
+export const selectedProducts = derived(
+  [productsStore, selectedCategory],
+  ([$products, $selectedCategory]) => {
+    if (!$selectedCategory) {
+      return $products
+    }
+    return $products.filter(p => p.categoryId === $selectedCategory)
+  }
+)
+
+export const loadProducts = async (categoryId?: string) => {
+  isLoading.set(true)
+  try {
+    if (categoryId) {
+      const { products } = await getProductsByCategoryRpc({ categoryId })
+      productsStore.set(products)
+    } else {
+      const products = await getProductsByCategory(categoryId)
+      productsStore.set(products)
+    }
+  } finally {
+    isLoading.set(false)
+  }
+}
+
+export const addProduct = async (data: Omit<Product, 'id'>) => {
+  isLoading.set(true)
+  try {
+    const product = await createProduct(data)
+    productsStore.update(p => [...p, product])
+  } finally {
+    isLoading.set(false)
+  }
+}
+```
+
+---
+
+### `index.ts`
+
+**Обязательный** файл для экспорта API.
+
+#### Роль:
+- Централизованный экспорт всех API модуля
+- Импорт в другие модули
+
+#### Экспорты:
+```typescript
+export * from './model.server'
+export * from './rpc'
+export * from './controller'
+export * from './types'
+export * from './constants'
+export * from './utils'
+```
+
+#### Пример:
+
+```typescript
+// src/routes/products/index.ts
+
+export * from './model.server'
+export * from './rpc'
+export * from './controller'
+export * from './types'
+export * from './constants'
+export * from './utils'
+```
+
+---
+
+## 🎨 Опциональные файлы (OPTIONAL)
+
+### `policy.ts`
+
+#### Роль:
+- Описание политик авторизации
+- Правила доступа
+
+#### Экспорты:
+```typescript
+export const canDoSomething = (user: User, target: Target): boolean => { ... }
+export const policy = { ... }
+```
+
+#### Пример:
+
+```typescript
+import type { User, Product } from './types'
+
+export const canViewProducts = (user: User | null): boolean => {
+  return true  // Все могут просматривать
+}
+
+export const canCreateProduct = (user: User | null): boolean => {
+  return !!user && user.role === 'admin'
+}
+
+export const canEditProduct = (user: User, product: Product): boolean => {
+  return user.role === 'admin' || product.ownerId === user.id
+}
+
+export const canDeleteProduct = (user: User, product: Product): boolean => {
+  return user.role === 'admin' || product.ownerId === user.id
+}
+
+export const policy = {
+  canViewProducts,
+  canCreateProduct,
+  canEditProduct,
+  canDeleteProduct,
+}
+```
+
+---
+
+### `utils.ts`
+
+#### Роль:
+- Вспомогательные функции модуля
+- Утилиты, не подходящие в другие категории
+
+#### Экспорты:
+```typescript
+export const formatX = (data): Formatted => { ... }
+export const validateX = (data): boolean => { ... }
+```
+
+#### Пример:
+
+```typescript
+import type { Product } from './types'
+
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB',
+  }).format(amount)
+}
+
+export const formatProductTitle = (product: Product): string => {
+  return `${product.name} - ${formatCurrency(product.price)}`
+}
+
+export const validateProductInput = (data: Partial<Product>): boolean => {
+  return !!data.name && data.price !== undefined
+}
+```
+
+---
+
+### `types.ts`
+
+#### Роль:
+- Типы и интерфейсы модуля
+- Экспорт для других модулей
+
+#### Экспорты:
+```typescript
+export interface Type { ... }
+export type Alias = ...
+```
+
+#### Пример:
+
+```typescript
+export interface Product {
+  id: string
+  name: string
+  description?: string
+  price: number
+  categoryId: string
+  ownerId: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateProductInput {
+  name: string
+  description?: string
+  price: number
+  categoryId: string
+}
+
+export interface ProductStats {
+  count: number
+  totalValue: number
+  avgPrice: number
+}
+```
+
+---
+
+### `templates.ts`
+
+#### Роль:
+- Шаблоны форм
+- Initial states
+
+#### Экспорты:
+```typescript
+export const formSchema = object({ ... })
+export const initialState = { ... }
+```
+
+#### Пример:
+
+```typescript
+import { object, string, number } from 'yup'
+
+export const productFormSchema = object({
+  name: string()
+    .required('Обязательное поле')
+    .min(3, 'Минимум 3 символа'),
+  description: string()
+    .optional(),
+  price: number()
+    .required('Обязательное поле')
+    .positive('Должно быть положительным')
+    .typeError('Должно быть числом'),
+  categoryId: string()
+    .required('Обязательное поле'),
+})
+
+export const initialFormState = {
+  name: '',
+  description: '',
+  price: 0,
+  categoryId: '',
+}
+
+export const initialProduct: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> = {
+  name: '',
+  description: '',
+  price: 0,
+  categoryId: '',
+  ownerId: '',
+}
+```
+
+---
+
+### `constants.ts`
+
+#### Роль:
+- Константы и enum
+- Нет изменяемых значений
+
+#### Экспорты:
+```typescript
+export const CONSTANT = 'value'
+export enum Enum { ... }
+```
+
+#### Пример:
+
+```typescript
+export const PAGE_SIZE = 20
+export const MAX_UPLOAD_SIZE = 1024 * 1024 * 5  // 5MB
+
+export const PRODUCT_CATEGORIES = {
+  ELECTRONICS: 'electronics',
+  CLOTHING: 'clothing',
+  HOME: 'home',
+  SPORTS: 'sports',
+} as const
+
+export type Category = typeof PRODUCT_CATEGORIES[keyof typeof PRODUCT_CATEGORIES]
+
+export const PRODUCT_SORTING = {
+  NEWEST: 'newest',
+  PRICE_ASC: 'price_asc',
+  PRICE_DESC: 'price_desc',
+} as const
+
+export const MAX_SEARCH_LENGTH = 100
+```
+
+---
+
+### `ui/`
+
+#### Роль:
+- UI компоненты модуля
+- Не выносятся в общую библиотеку
+
+#### Структура:
+```
+ui/
+├── Component.svelte
+└── Toast.svelte
+```
+
+#### Примеры:
+
+**`ui/ProductCard.svelte`:**
+
+```svelte
+<script lang="ts">
+  export let product: Product
+  export let onClick
+</script>
+
+<div class="product-card" on:click={onClick}>
+  <h3>{product.name}</h3>
+  <p class="price">{formatCurrency(product.price)}</p>
+</div>
+```
+
+**`ui/Toast.svelte`:**
+
+```svelte
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  
+  const dispatch = createEventDispatcher()
+  
+  export let message: string
+  export let type: 'success' | 'error' | 'info' = 'info'
+  export let duration = 3000
+  
+  let visible = true
+  
+  afterUpdate(() => {
+    if (visible && duration) {
+      setTimeout(() => {
+        visible = false
+        dispatch('hidden')
+      }, duration)
+    }
+  })
+</script>
+
+{#if visible}
+  <div class={`toast toast-${type}`}>
+    {message}
+    <button on:click={() => (visible = false)}>×</button>
+  </div>
+{/if}
+```
+
+---
+
+## 📊 Сводная таблица
+
+| Файл | Обязательный | Основная роль | Кто импортирует |
+|------|-------------|--------------|-----------------|
+| `+page.svelte` | ✅ | Отображение | — |
+| `+layout.svelte` | ✅ | Обёртка | — |
+| `+page.server.ts` | ✅ | Actions, load | `+page.svelte` |
+| `+layout.server.ts` | ⚠️ | Load layout | `+layout.svelte` |
+| `rpc.ts` | ✅ | API между модулями | `controller.ts`, другие модули |
+| `model.server.ts` | ✅ | CRUD, валидация | `rpc.ts`, `controller.ts` |
+| `controller.ts` | ✅ | Состояние, утилиты | `+page.svelte` |
+| `index.ts` | ✅ | Экспорт API | Другие модули |
+| `policy.ts` | ⚠️ | Авторизация | `rpc.ts`, `controller.ts` |
+| `utils.ts` | ⚠️ | Утилиты | Все файлы модуля |
+| `types.ts` | ⚠️ | Типы | Все файлы модуля |
+| `templates.ts` | ⚠️ | Шаблоны | `controller.ts` |
+| `constants.ts` | ⚠️ | Константы | Все файлы модуля |
+| `ui/` | ⚠️ | Компоненты | `+page.svelte` |
+
+---
+
+## 🔗 Следующие шаги
+
+→ [Data Flow](/06-data-flow) — как двигаются данные
+
+→ [FAQ и Checklist](/07-faq-checklist) — частые вопросы

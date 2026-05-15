@@ -1,0 +1,90 @@
+---
+title: "FDA (Fractal Domain Architecture)"
+description: "Документация по архитектуре фрактальных доменов для масштабируемых приложений"
+tableOfContents: false
+hero:
+  tagline: Фрактальная архитектура для современных приложений
+  image:
+    dark: ../../assets/fda-logo-dark.svg
+    light: ../../assets/fda-logo-light.svg
+  actions:
+    - text: Начать изучение
+      link: /01-introduction/
+      icon: right-arrow
+      variant: primary
+    - text: GitHub репозиторий
+      link: https://github.com/your-org/fda
+      icon: external
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Основные принципы
+
+<CardGrid stagger>
+  <Card title="Фрактальность" icon="left-caret">
+    Одинаковая структура на всех уровнях: компоненты → подмодули → домены → приложения
+  </Card>
+  <Card title="Разделение на слои" icon="down-caret">
+    Четкое разделение: репозитории → модель → контроллер → UI
+  </Card>
+  <Card title="Явные контракты" icon="approve-check-circle">
+    Каждый файл имеет строго определенную роль и набор экспортов
+  </Card>
+  <Card title="Framework-agnostic" icon="astro">
+    Архитектура независима от фреймворка (Astro/SvelteKit/React/Vue)
+  </Card>
+</CardGrid>
+
+## 📚 Документация
+
+<div class="docs-grid">
+  <a href="/01-introduction/" class="doc-card">
+    <h3>01. Введение</h3>
+    <p>Основы FDA и зачем она нужна</p>
+  </a>
+  <a href="/02-core-concepts/" class="doc-card">
+    <h3>02. Основные концепции</h3>
+    <p>Фрактальность, слои и контракты</p>
+  </a>
+  <a href="/03-project-structure/" class="doc-card">
+    <h3>03. Структура проекта</h3>
+    <p>Организация файлов и папок</p>
+  </a>
+  <a href="/04-domains-submodules/" class="doc-card">
+    <h3>04. Домены и подмодули</h3>
+    <p>Фрактальная организация кода</p>
+  </a>
+  <a href="/05-file-contracts/" class="doc-card">
+    <h3>05. Контракты файлов</h3>
+    <p>Роли и экспорт каждого файла</p>
+  </a>
+  <a href="/06-data-flow/" class="doc-card">
+    <h3>06. Data Flow</h3>
+    <p>Направление зависимостей</p>
+  </a>
+  <a href="/07-faq-checklist/" class="doc-card">
+    <h3>07. FAQ и Checklist</h3>
+    <p>Частые вопросы и проверки</p>
+  </a>
+</div>
+
+## 🧪 Примеры
+
+<div class="examples-grid">
+  <a href="/examples/minimal/" class="example-card">
+    <h3>Минимальный</h3>
+    <p>Минимум кода для понимания основ</p>
+    <span class="badge">🟢 Малый</span>
+  </a>
+  <a href="/examples/base/" class="example-card">
+    <h3>Базовый</h3>
+    <p>Несколько модулей с реальной логикой</p>
+    <span class="badge">🟡 Средний</span>
+  </a>
+  <a href="/examples/e-commerce/" class="example-card">
+    <h3>E-commerce</h3>
+    <p>Полный пример интернет-магазина</p>
+    <span class="badge">🔴 Большой</span>
+  </a>
+</div>

@@ -1,0 +1,91 @@
+import starlight from "@astrojs/starlight";
+import { defineConfig } from "astro/config";
+import { ion } from "starlight-ion-theme";
+
+// https://astro.build/config
+export default defineConfig({
+  site: "https://fdadocs.dev",
+  base: "/",
+  integrations: [
+    starlight({
+      title: "FDA Docs",
+      logo: {
+        dark: "./src/assets/fda-logo-dark.svg",
+        light: "./src/assets/fda-logo-light.svg",
+      },
+      social: [
+        {
+          icon: "github",
+          label: "GitHub",
+          href: "https://github.com/dmdin/fda",
+        },
+      ],
+      sidebar: [
+        {
+          label: "📚 Документация FDA",
+          items: [
+            {
+              label: "Введение",
+              link: "/01-introduction/",
+            },
+            {
+              label: "Основные концепции",
+              link: "/02-core-concepts/",
+            },
+            {
+              label: "Структура проекта",
+              link: "/03-project-structure/",
+            },
+            {
+              label: "Домены и подмодули",
+              link: "/04-domains-submodules/",
+            },
+            {
+              label: "Контракты файлов",
+              link: "/05-file-contracts/",
+            },
+            {
+              label: "Поток данных",
+              link: "/06-data-flow/",
+            },
+            {
+              label: "FAQ и Checklist",
+              link: "/07-faq-checklist/",
+            },
+          ],
+        },
+        {
+          label: "Reference",
+          autogenerate: {
+            directory: "reference",
+          },
+        },
+      ],
+      customCss: [
+        "@fontsource-variable/space-grotesk/index.css",
+        "@fontsource/space-mono/400.css",
+        "@fontsource/space-mono/700.css",
+        "./src/styles/global.css",
+      ],
+      lastUpdated: true,
+      pagination: true,
+      plugins: [
+        ion({
+          icons: {
+            iconDir: "./src/icons",
+          },
+          footer: {
+            text: "©️ 2026 FDA Documentation",
+            links: [
+              {
+                text: "GitHub",
+                href: "https://github.com/dmdin/fda",
+              },
+            ],
+          },
+        }),
+      ],
+    }),
+  ],
+  output: "static",
+});
