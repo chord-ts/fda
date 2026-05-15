@@ -1,11 +1,15 @@
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
 import { ion } from "starlight-ion-theme";
+import { rehypeMermaid } from "./src/plugins/rehype-mermaid.js";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://fdadocs.dev",
   base: "/",
+  mdx: {
+    rehypePlugins: [rehypeMermaid],
+  },
   integrations: [
     starlight({
       title: "FDA Docs",
@@ -65,10 +69,16 @@ export default defineConfig({
         "@fontsource-variable/space-grotesk/index.css",
         "@fontsource/space-mono/400.css",
         "@fontsource/space-mono/700.css",
+        "@fontsource-variable/unbounded/index.css",
+        "@fontsource/geist-sans/index.css",
+        "./src/styles/modern.css",
         "./src/styles/global.css",
       ],
       lastUpdated: true,
       pagination: true,
+      components: {
+        // PageFrame: "./src/components/PageFrame.astro",
+      },
       plugins: [
         ion({
           icons: {

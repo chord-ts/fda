@@ -1,0 +1,88 @@
+@layer ion {
+  :root {
+    /* Font families */
+    --font-heading: "Unbounded Variable", sans-serif;
+    --font-body: "Geist Sans Variable", sans-serif;
+  }
+
+  /* ===== TYPOGRAPHY ===== */
+
+  /* Headings use Unbounded */
+  h1, h2, h3, h4, h5, h6,
+  .sl-markdown-content h1,
+  .sl-markdown-content h2,
+  .sl-markdown-content h3,
+  .sl-markdown-content h4,
+  .sl-markdown-content h5,
+  .sl-markdown-content h6,
+  .hero h1 span {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--sl-color-white);
+    letter-spacing: -0.01em;
+  }
+
+  h1, .sl-markdown-content h1 {
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  h2, .sl-markdown-content h2 {
+    font-size: clamp(1.375rem, 2.5vw, 1.75rem);
+  }
+
+  h3, .sl-markdown-content h3 {
+    font-size: clamp(1.125rem, 2vw, 1.375rem);
+  }
+
+  h4, h5, h6 {
+    font-size: 1.125rem;
+  }
+
+  /* Body text uses Geist Sans */
+  body,
+  .sl-markdown-content p,
+  .sl-markdown-content li,
+  .sl-markdown-content td,
+  .sl-markdown-content th,
+  .doc-card p,
+  .example-card p,
+  .tagline,
+  .pagination-links a span,
+  .meta {
+    font-family: var(--font-body);
+    font-weight: 400;
+  }
+
+  .sl-markdown-content p {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+  }
+
+  .sl-markdown-content strong {
+    font-weight: 600;
+  }
+
+  /* Hero heading - white, no gradient */
+  .hero h1 span {
+    background: none;
+    -webkit-text-fill-color: unset;
+    color: var(--sl-color-white);
+  }
+
+  /* ===== GRADIENT CTA BUTTON ===== */
+
+  .action.primary {
+    background: linear-gradient(135deg, #086efd, #3b82f6, #8b5cf6) !important;
+    color: #fff !important;
+    border: none;
+    font-weight: 600;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .action.primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+}

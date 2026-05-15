@@ -1,0 +1,108 @@
+<script client:load>
+import mermaid from "mermaid";
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: "dark",
+  themeCSS: `
+    .node rect, .node circle, .node polygon, .node path {
+      fill: rgba(15, 23, 42, 0.8) !important;
+      stroke: rgba(0, 212, 255, 0.4) !important;
+    }
+    .edgePath .path {
+      stroke: rgba(0, 212, 255, 0.5) !important;
+    }
+    g.label div {
+      color: #e2e8f0 !important;
+      font-family: 'Geist Sans Variable', sans-serif !important;
+    }
+    g.label span {
+      color: #e2e8f0 !important;
+    }
+    .cluster rect {
+      fill: rgba(10, 14, 39, 0.6) !important;
+      stroke: rgba(139, 92, 246, 0.3) !important;
+    }
+    .subgraph {
+      fill: rgba(10, 14, 39, 0.4) !important;
+      stroke: rgba(0, 212, 255, 0.2) !important;
+    }
+  `,
+  flowchart: {
+    curve: "basis",
+    padding: 20,
+    htmlLabels: true,
+  },
+  sequence: {
+    mirrorActors: false,
+  },
+});
+
+let idCounter = 0;
+
+async function renderContainer(container: HTMLElement) {
+  const source = container.textContent?.trim() || "";
+  if (!source) return;
+
+  idCounter++;
+  const id = "mermaid-graph-" + Date.now() + "-" + idCounter;
+
+  try {
+    const { svg } = await mermaid.render(id, source);
+    container.innerHTML = svg;
+
+    const svgEl = container.querySelector("svg");
+    if (svgEl) {
+      svgEl.style.maxWidth = "100%";
+      svgEl.style.height = "auto";
+      svgEl.style.display = "block";
+      svgEl.style.margin = "0 auto";
+    }
+  } catch (e) {
+    console.warn("[mermaid] Failed to render:", e);
+    container.innerHTML = `<div style="
+      padding:1rem;
+      background:rgba(239,68,68,0.06);
+      border:1px solid rgba(239,68,68,0.25);
+      border-radius:12px;
+      color:#f87171;
+      font-family:'Geist Sans Variable',sans-serif;
+    ">
+      <strong>Mermaid diagram failed to render</strong><br>
+      <code style="display:block;margin-top:0.5rem;color:#94a3b8;font-family:monospace;white-space:pre-wrap;">${source.replace(/</g, "&lt;")}</code>
+    </div>`;
+  }
+}
+
+async function renderAll() {
+  const containers = document.querySelectorAll<HTMLElement>(
+    ".mermaid-diagram-container"
+  );
+  for (const container of containers) {
+    if (!container.querySelector("svg")) {
+      await renderContainer(container);
+    }
+  }
+}
+
+renderAll();
+
+const observer = new MutationObserver(() => {
+  const containers = document.querySelectorAll(".mermaid-diagram-container");
+  if (containers.length) renderAll();
+});
+
+observer.observe(document.documentElement, {
+  childList: true,
+  subtree: true,
+});
+</script>
+
+<style>
+  .mermaid-diagram-container {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+  }
+</style>

@@ -16,6 +16,8 @@
   "dependencies": {
     "@astrojs/starlight": "catalog:",
     "@fontsource-variable/space-grotesk": "^5.1.1",
+    "@fontsource-variable/unbounded": "^5.2.8",
+    "@fontsource/geist-sans": "^5.2.5",
     "@fontsource/space-mono": "^5.1.2",
     "@iconify-json/lucide": "^1.2.22",
     "astro": "catalog:",
@@ -26,6 +28,7 @@
   },
   "packageManager": "pnpm@10.32.1",
   "devDependencies": {
-    "@astrojs/check": "^0.9.9"
+    "@astrojs/check": "^0.9.9",
+    "unist-util-visit": "^5.1.0"
   }
 }
