@@ -17,8 +17,7 @@
 3. [Структура проекта](https://fdadocs.dev/docs/03-project-structure) — организация файлов
 4. [Домены и подмодули](https://fdadocs.dev/docs/04-domains-submodules) — фрактальная организация
 5. [Контракты файлов](https://fdadocs.dev/docs/05-file-contracts) — роли и экспорт
-6. [Data Flow](https://fdadocs.dev/docs/06-data-flow) — направление зависимостей
-7. [FAQ и Checklist](https://fdadocs.dev/docs/07-faq-checklist) — частые вопросы
+6. [FAQ и Checklist](https://fdadocs.dev/docs/06-faq-checklist) — частые вопросы
 
 ## 🧪 Рабочие примеры
 

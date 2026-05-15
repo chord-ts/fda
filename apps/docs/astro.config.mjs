@@ -49,12 +49,8 @@ export default defineConfig({
               link: "/05-file-contracts/",
             },
             {
-              label: "Поток данных",
-              link: "/06-data-flow/",
-            },
-            {
               label: "FAQ и Checklist",
-              link: "/07-faq-checklist/",
+              link: "/06-faq-checklist/",
             },
           ],
         },

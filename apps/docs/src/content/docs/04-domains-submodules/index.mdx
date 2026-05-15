@@ -3,7 +3,60 @@ title: "Домены и подмодули"
 description: "Фрактальная организация: как создавать модули и подмодули"
 ---
 
-# Домены и подмодули
+### Практический пример:
+
+```
+src/
+│
+└── pages/                         # Бизнес-логика (фрактальные домены)
+    └── cart/                      # <your_module> — пример домена
+        ├── index.vue              # Компонент страницы 
+        ├── rpc.ts                 # Бизнес-логика модуля
+        ├── model.server.ts        # Логика работы с данными (server-only)
+        ├── schema.ts              # Drizzle/Zod схема модели
+        ├── composables.ts         # Композируемая логика
+        ├── stores.ts              # Локальное состояние 
+        ├── utils.ts               # Хелперы модуля
+        ├── types.ts               # TypeScript интерфейсы
+        ├── templates.ts           # Шаблоны форм
+        ├── constants.ts           # Константы, enum
+        ├── policy.ts              # Политики доступа
+        ├── index.ts               # Публичный API модуля
+        ├── ui/                    # UI компоненты модуля
+        │   ├── CartWidget.vue
+        │   ├── CartItem.vue
+        │   └── CheckoutForm.vue
+        │
+        ├── _checkout/             # _submodule (не роутит)
+        │   ├── rpc.ts
+        │   ├── model.server.ts
+        │   ├── schema.ts
+        │   ├── controller.ts
+        │   ├── utils.ts
+        │   ├── types.ts
+        │   ├── constants.ts
+        │   ├── policy.ts
+        │   ├── index.ts
+        │   └── ui/
+        │       └── PaymentStep.vue
+        │
+        └── items/                 # submodule (роутит: /cart/items)
+            ├── index.vue
+            ├── rpc.ts
+            ├── model.server.ts
+            ├── schema.ts
+            ├── controller.ts
+            ├── stores.ts
+            ├── utils.ts
+            ├── types.ts
+            ├── constants.ts
+            ├── policy.ts
+            ├── index.ts
+            └── ui/
+                └── ItemList.vue
+```
+
+---
 
 ---
 
@@ -558,6 +611,4 @@ export const canAccessDashboard = (user: User | null): boolean => {
 
 → [Контракты файлов](/05-file-contracts) — полное описание каждого файла
 
-→ [Data Flow](/06-data-flow) — как двигаются данные
-
-→ [FAQ и Checklist](/07-faq-checklist) — частые вопросы
+→ [Data Flow](/06-faq-checklist) — частые вопросы
