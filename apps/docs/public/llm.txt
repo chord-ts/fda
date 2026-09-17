@@ -1,0 +1,248 @@
+# FDA (Fractal Domain Architecture)
+
+Documentation: https://fda-docs.vercel.app/
+
+## Overview
+
+FDA is an architectural approach for building complex applications based on fractality, strict separation of concerns, and explicit dependency management.
+
+## Core Principles
+
+1. **Fractality**: Identical structure at all levels of abstraction: components -> submodules -> domains -> applications.
+2. **Layer Separation**: Strict separation: repositories -> model -> controller -> state -> UI.
+3. **Explicit Contracts**: Every file has a strictly defined role and exports.
+4. **Framework-agnostic**: Architecture is independent of meta-framework (SvelteKit/Nuxt/Next).
+
+## Business Logic vs Infrastructure
+
+| Level | Path | Description |
+|-------|------|-------------|
+| Infrastructure | `src/lib/*` | Framework-agnostic code, no business logic. Rarely changes |
+| Business Logic | `src/routes/*` or `src/pages/*` | Business logic. Changes often, can use infrastructure |
+
+## Layered Architecture
+
+Data flows sequentially from layer to layer. Upper layers do not use lower layers, but lower layers use adjacent upper layers.
+
+| Layer | Files | Responsibility | Prohibitions |
+|-------|-------|----------------|--------------|
+| Repo | `server/repo/*` | External data sources | No business logic |
+| Model | `model.server.ts`, `schema.ts` | Data logic | No rich business models |
+| RPC | `rpc.ts` | API endpoints using models | No direct UI usage |
+| Reactivity | `state.ts`, `stores.ts` | State management, reactivity | No direct external imports |
+| UI | `+page.svelte`, `ui/` | Display, user input | No direct `repo/*` imports |
+
+## Dependency Flow
+
+UI Layer (+page.svelte, ui/) -> Controller Layer (controller.ts/stores.ts) -> Model Layer (model.server.ts, schema.ts, rpc.ts) -> Repository Layer (server/repo/db, redis, vault, keto)
+
+## Project Structure
+
+```
+src/
+├── lib/                    # Framework-agnostic infrastructure
+│   ├── ui/                 # Reusable components without business logic
+│   └── server/             # Server utilities and repositories
+│       └── repo/           # External data sources
+│           ├── db/         # Database (Drizzle ORM)
+│           ├── redis/      # Cache and sessions
+│           ├── vault/      # Secrets and credentials
+│           └── keto/       # Authorization (OpenFGA)
+├── routes/ or pages/       # Business logic (fractal domains)
+│   └── cart/               # Example domain
+│       ├── +page.svelte    # Page component
+│       ├── +page.server.ts # Server load/actions
+│       ├── rpc.ts          # RPC functions
+│       ├── model.server.ts # Data logic
+│       ├── controller.ts   # State management
+│       ├── stores.ts       # Svelte stores (alternative to controller)
+│       ├── types.ts        # TypeScript interfaces
+│       ├── constants.ts    # Constants, enums
+│       ├── utils.ts        # Module helpers
+│       ├── policy.ts       # Authorization policies
+│       ├── templates.ts    # Form templates
+│       ├── schema.ts       # Drizzle ORM schema
+│       ├── index.ts        # Public API exports
+│       └── ui/             # Internal UI components
+│           ├── CartItem.svelte
+│           └── ...
+├── scripts/                # Scripts, utilities, migrations
+└── setup/                  # Startup scenarios
+```
+
+## Domains and Submodules
+
+### Module
+A group of files implementing specific functionality (e.g., `auth`, `dashboard`, `products`).
+
+Required files for a module:
+- `+page.svelte` - page component
+- `+page.server.ts` - server load and actions
+- `rpc.ts` - RPC functions for cross-domain communication
+- `model.server.ts` - CRUD operations
+- `controller.ts` or `stores.ts` - state management
+- `index.ts` - public API exports
+
+Optional files:
+- `+layout.svelte` + `+layout.server.ts` - layout
+- `types.ts` - types
+- `constants.ts` - constants
+- `utils.ts` - helpers
+- `policy.ts` - authorization
+- `templates.ts` - form templates
+- `schema.ts` - ORM schema
+- `ui/` - internal components
+
+### Submodule
+A module inside a module. Has its own structure.
+
+Types:
+- `_prefix` (e.g., `_analytics`) - internal submodule, no page
+- `prefix` (e.g., `analytics`) - submodule with its own page/route
+
+## File Contracts
+
+### schema.ts
+- ONLY ORM schema definitions
+- NO logic
+- Exports: table definitions
+
+### model.server.ts
+- Business data logic via repo
+- CRUD operations, transactions
+- Exports: data operations
+
+### rpc.ts
+- Request handlers, uses models, error handling
+- API endpoints for frontend and consumers
+- Exports: RPC functions
+
+### controller.ts / stores.ts
+- UI state management
+- Reactive stores and input handlers
+- Exports: stores and utilities
+
+### +page.svelte / index.vue / page.tsx
+- Direct UI with markup
+- NO exports (except framework-specific)
+- Imports state/stores
+
+### policy.ts
+- Authorization policies
+- Exports: access rules
+
+### utils.ts
+- Module helper functions
+- Exports: utilities that don't fit other categories
+
+### constants.ts
+- Constants and enums only
+- Exports: const/enum
+
+### templates.ts
+- Form templates and states
+- Exports: form schemas, initial states
+
+### types.ts
+- Types and interfaces only
+- Exports: type/interface
+
+### index.ts
+- Central module export
+- Exports: all public API from model, rpc, controller, types, constants
+
+## Rules
+
+1. UI never imports `repo/*` directly
+2. UI never imports `rpc/*` directly (use controller)
+3. UI never imports `model.server/*` directly
+4. Controller never imports `ui/*`
+5. Model never imports `ui/*`
+6. RPC never imports `ui/*`
+7. If `+layout.server.ts` exists, `+layout.svelte` MUST exist
+8. Every module MUST have `index.ts`
+9. Cross-domain communication ONLY via `rpc.ts` exports
+10. Reusable UI components go to `lib/ui/`, not module `ui/`
+
+## Framework Mapping
+
+| FDA | SvelteKit | Next.js | Nuxt |
+|-----|-----------|---------|------|
+| Page | `+page.svelte` | `page.tsx` | `index.vue` |
+| Server | `+page.server.ts` | `action.ts` | `setup.ts` |
+| RPC | `rpc.ts` | `rpc.ts` | `rpc.ts` |
+| API | `+server.ts` | `endpoints.ts` | `/server/api/.ts` |
+| Model | `model.server.ts` | `model.ts` | `model.ts` |
+
+## FAQ
+
+Q: schema.ts inside module or in lib/server/repo/db/schema.ts?
+A: Use `lib/server/repo/db/schema.ts` for shared tables. Module-level `schema.ts` only for Drizzle ORM table definitions if needed locally.
+
+Q: controller.ts vs stores.ts?
+A: Same thing. controller.ts = stores.ts + utils.
+
+Q: Is index.ts mandatory?
+A: Yes! It provides centralized exports.
+
+Q: Where to put global stores?
+A: `src/lib/universal/stores/`
+
+Q: How to organize ui/ folder?
+A: `ui/` is for internal module components. Reusable components go to `lib/ui/` or external package.
+
+Q: Is +page.server.ts required?
+A: Yes, even if empty (with empty load function).
+
+Q: How to handle forms?
+A: Through `actions` in `+page.server.ts`.
+
+Q: Where to put dynamic routes?
+A: Use `[id]/` subfolder.
+
+## Checklist for Creating a Module
+
+Structure:
+- [ ] +page.svelte created
+- [ ] +layout.svelte created (if needed)
+- [ ] +page.server.ts created (with load/actions)
+- [ ] +layout.server.ts created (if layout exists)
+- [ ] rpc.ts created
+- [ ] model.server.ts created
+- [ ] controller.ts/stores.ts created
+- [ ] index.ts created
+
+Contract checks:
+- [ ] schema.ts - only schemas
+- [ ] rpc.ts - only RPC functions
+- [ ] model.server.ts - only CRUD/validation
+- [ ] controller.ts - only stores/utils
+- [ ] policy.ts - only access policies
+- [ ] utils.ts - only helpers
+- [ ] types.ts - only types
+- [ ] templates.ts - only templates
+- [ ] constants.ts - only constants
+- [ ] ui/ - only UI components
+
+Dependency checks:
+- [ ] UI does not import repo/* directly
+- [ ] UI does not import rpc/* directly
+- [ ] UI does not import model.server/* directly
+- [ ] Controller does not import ui/*
+- [ ] Model does not import ui/*
+- [ ] RPC does not import ui/*
+
+Export checks:
+- [ ] +page.server.ts exports load and actions
+- [ ] +layout.server.ts exports load
+- [ ] rpc.ts exports RPC functions
+- [ ] model.server.ts exports CRUD functions
+- [ ] controller.ts exports stores and utilities
+- [ ] index.ts exports all API
+
+## Common Mistakes
+
+1. UI -> repo direct import - NEVER. Use controller -> model -> repo
+2. Missing index.ts - ALWAYS create index.ts
+3. RPC called from UI - Use controller as intermediary
+4. Mixed responsibilities - model.server.ts should not contain UI logic

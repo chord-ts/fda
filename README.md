@@ -8,16 +8,16 @@
 
 ## 📚 Документация
 
-Полная документация доступна по адресу: **https://fdadocs.dev**
+Полная документация доступна по адресу: **https://fda-docs.vercel.app**
 
 ### Содержание
 
-1. [Введение](https://fdadocs.dev/docs/01-introduction) — основы FDA
-2. [Основные концепции](https://fdadocs.dev/docs/02-core-concepts) — фрактальность, слои, контракты
-3. [Структура проекта](https://fdadocs.dev/docs/03-project-structure) — организация файлов
-4. [Домены и подмодули](https://fdadocs.dev/docs/04-domains-submodules) — фрактальная организация
-5. [Контракты файлов](https://fdadocs.dev/docs/05-file-contracts) — роли и экспорт
-6. [FAQ и Checklist](https://fdadocs.dev/docs/06-faq-checklist) — частые вопросы
+1. [Введение](https://fda-docs.vercel.app/docs/01-introduction) — основы FDA
+2. [Основные концепции](https://fda-docs.vercel.app/docs/02-core-concepts) — фрактальность, слои, контракты
+3. [Структура проекта](https://fda-docs.vercel.app/docs/03-project-structure) — организация файлов
+4. [Домены и подмодули](https://fda-docs.vercel.app/docs/04-domains-submodules) — фрактальная организация
+5. [Контракты файлов](https://fda-docs.vercel.app/docs/05-file-contracts) — роли и экспорт
+6. [FAQ и Checklist](https://fda-docs.vercel.app/docs/06-faq-checklist) — частые вопросы
 
 ## 🧪 Рабочие примеры
 

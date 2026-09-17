@@ -5,7 +5,7 @@ import { rehypeMermaid } from "./src/plugins/rehype-mermaid.js";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://fdadocs.dev",
+  site: "https://fda-docs.vercel.app/",
   base: "/",
   mdx: {
     rehypePlugins: [rehypeMermaid],
@@ -51,6 +51,10 @@ export default defineConfig({
             {
               label: "FAQ и Checklist",
               link: "/06-faq-checklist/",
+            },
+            {
+              label: "Qwen Code Skill",
+              link: "/07-qwen-code-skill/",
             },
           ],
         },
