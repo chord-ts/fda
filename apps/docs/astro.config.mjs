@@ -14,14 +14,14 @@ export default defineConfig({
     starlight({
       title: "FDA Docs",
       logo: {
-        dark: "./src/assets/fda-logo-dark.svg",
-        light: "./src/assets/fda-logo-light.svg",
+        dark: "./src/assets/logo.png",
+        light: "./src/assets/logo.png",
       },
       social: [
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/dmdin/fda",
+          href: "https://github.com/chord-ts/fda",
         },
       ],
       sidebar: [
@@ -89,7 +89,7 @@ export default defineConfig({
             links: [
               {
                 text: "GitHub",
-                href: "https://github.com/dmdin/fda",
+                href: "https://github.com/chord-ts/fda",
               },
             ],
           },
