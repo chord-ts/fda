@@ -25,7 +25,7 @@ Reference: https://fda-docs.vercel.app/
 | Repo | `lib/server/repo/*` | External data sources | No business logic |
 | Model | `model.server.ts`, `schema.ts` | Data logic, CRUD | No rich business logic, no UI |
 | RPC | `rpc.ts` | API endpoints | Uses models, no UI |
-| Controller | `controller.ts`, `stores.ts` | State management | No external sources, no UI components |
+| Controller | `controller.ts`, `controller.svelte.ts` | State management | No external sources, no UI components |
 | UI | `+page.svelte`, `ui/` | Display, input | No direct repo/rpc/model imports |
 
 ## Dependency Rules
@@ -53,7 +53,7 @@ Required:
 - `+page.server.ts` - load function + actions
 - `rpc.ts` - RPC functions for cross-domain calls
 - `model.server.ts` - data operations
-- `controller.ts` or `stores.ts` - state + utilities
+- `controller.ts` or `controller.svelte.ts` - state + utilities
 - `index.ts` - public API (exports from model, rpc, controller, types, constants)
 
 Optional:
@@ -94,9 +94,18 @@ export const createUser = async (data: CreateUserInput) => { ... }
 export const authenticateUser: Rpc<'auth/authenticate'> = async ({ email, password }) => { ... }
 ```
 
-### controller.ts / stores.ts
+### controller.ts / controller.svelte.ts
 ```typescript
 // ONLY reactive state and handlers
+
+// Svelte 5 runes (preferred)
+class UserController {
+  user = $state<User | null>(null)
+  async login(email: string, password: string) { ... }
+}
+export const userController = new UserController()
+
+// Svelte 4 stores (legacy)
 export const userStore = writable(null)
 export const login = async (email: string, password: string) => { ... }
 ```
@@ -105,6 +114,10 @@ export const login = async (email: string, password: string) => { ... }
 ```svelte
 <!-- ONLY markup, imports controller -->
 <script>
+  // Svelte 5 runes
+  import { userController } from './controller.svelte'
+
+  // Svelte 4 stores
   import { userStore, login } from './controller'
 </script>
 ```
