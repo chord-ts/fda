@@ -1,5 +1,5 @@
 ---
-name: fractal-architecture
+name: fda
 description: Fractal Domain Architecture assistant for scalable applications. Use when the user designs, creates, reviews, or refactors code that must follow FDA, or mentions domains, modules, subdomains, layers, or file contracts.
 ---
 

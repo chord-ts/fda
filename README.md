@@ -64,7 +64,7 @@ FDA доступна как устанавливаемый скилл для Qwe
 Быстрый способ — CLI `skills`:
 
 ```bash
-npx skills add chord-ts/fractal-architecture
+npx skills add chord-ts/fda
 ```
 
 Вручную — по кросс-агентному стандарту `.agents/skills`:
