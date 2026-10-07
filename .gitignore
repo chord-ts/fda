@@ -19,6 +19,9 @@ pnpm-debug.log*
 .env
 .env.production
 
+# vercel
+.vercel
+
 # macOS-specific files
 .DS_Store
 
@@ -26,3 +29,4 @@ pnpm-debug.log*
 .playwright-mcp
 .github
 .qwen
+.env*

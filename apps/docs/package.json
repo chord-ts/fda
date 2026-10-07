@@ -26,7 +26,6 @@
     "starlight-package-managers": "^0.9.0",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@10.32.1",
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "unist-util-visit": "^5.1.0"

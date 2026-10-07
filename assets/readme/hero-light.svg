@@ -39,7 +39,7 @@
   <!-- Left column -->
   <line x1="56" y1="170" x2="664" y2="170" stroke="#e0d8c6" stroke-width="2"/>
   <text class="sg" x="56" y="216" font-size="36" font-weight="600" letter-spacing="-0.3" fill="#141413">Fractal Domain Architecture</text>
-  <text class="sg" x="56" y="258" font-size="23" fill="#3d3d3a">Код вокруг бизнеса, а не вокруг типов файлов.</text>
+  <text class="sg" x="56" y="258" font-size="22" fill="#3d3d3a">Код для бизнеса, а не для вымышленных абстракций.</text>
   <text class="sg" x="56" y="292" font-size="19" fill="#6c6a64">SvelteKit · Next.js · Nuxt — одна структура домена</text>
 
   <!-- Layer chain: imports point down -->

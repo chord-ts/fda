@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="ogTitle ogDesc">
   <title id="ogTitle">FDA — Fractal Domain Architecture</title>
-  <desc id="ogDesc">Код вокруг бизнеса, а не вокруг типов файлов: домен cart со слоями UI, Server, Controller, RPC и Model; субдомен items повторяет ту же структуру.</desc>
+  <desc id="ogDesc">Код для бизнеса, а не для вымышленных абстракций: домен cart со слоями UI, Server, Controller, RPC и Model; субдомен items повторяет ту же структуру.</desc>
 
   <style>
     .sg { font-family: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
@@ -39,7 +39,7 @@
   <!-- Left column -->
   <line x1="88" y1="204" x2="1112" y2="204" stroke="#e0d8c6" stroke-width="2"/>
   <text class="sg" x="88" y="282" font-size="38" font-weight="600" letter-spacing="-0.3" fill="#141413">Fractal Domain Architecture</text>
-  <text class="sg" x="88" y="330" font-size="24" fill="#3d3d3a">Код вокруг бизнеса, а не вокруг типов файлов.</text>
+  <text class="sg" x="88" y="330" font-size="22" fill="#3d3d3a">Код для бизнеса, а не для вымышленных абстракций.</text>
   <text class="sg" x="88" y="372" font-size="20" fill="#6c6a64">SvelteKit · Next.js · Nuxt — одна структура домена</text>
 
   <!-- Layer chain: imports point down -->
