@@ -1,6 +1,9 @@
 <div align="center">
 
-<img src="./assets/readme/hero.svg" width="100%" alt="FDA — Fractal Domain Architecture: домен cart со слоями UI, Server, Controller, RPC и Model; подмодуль items повторяет ту же структуру">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/readme/hero-dark.svg">
+  <img src="./assets/readme/hero-light.svg" width="100%" alt="FDA — Fractal Domain Architecture: домен cart со слоями UI, Server, Controller, RPC и Model; подмодуль items повторяет ту же структуру">
+</picture>
 
 # FDA
 

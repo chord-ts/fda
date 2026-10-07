@@ -13,7 +13,12 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "FDA",
-      logo: {
+      locales: {
+        root: {
+          lang: "ru",
+          label: "Русский",
+        },
+      },      logo: {
         dark: "./src/assets/fda-mark-white.svg",
         light: "./src/assets/fda-mark.svg",
       },
@@ -48,6 +53,44 @@ export default defineConfig({
             name: "theme-color",
             content: "#171614",
             media: "(prefers-color-scheme: dark)",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:image",
+            content: "https://fda-docs.vercel.app/og.png",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: { property: "og:image:width", content: "1200" },
+        },
+        {
+          tag: "meta",
+          attrs: { property: "og:image:height", content: "630" },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:image:alt",
+            content:
+              "Знак FDA и домен cart со слоями UI, Server, Controller, RPC и Model; подмодуль items повторяет ту же структуру",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:image",
+            content: "https://fda-docs.vercel.app/og.png",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:image:alt",
+            content:
+              "Знак FDA и домен cart со слоями UI, Server, Controller, RPC и Model; подмодуль items повторяет ту же структуру",
           },
         },
       ],

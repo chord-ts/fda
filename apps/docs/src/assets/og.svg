@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="ogTitle ogDesc">
+  <title id="ogTitle">FDA — Fractal Domain Architecture</title>
+  <desc id="ogDesc">Код вокруг бизнеса, а не вокруг типов файлов: домен cart со слоями UI, Server, Controller, RPC и Model; подмодуль items повторяет ту же структуру.</desc>
+
+  <style>
+    .sg { font-family: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+    .mono { font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  </style>
+
+  <defs>
+    <linearGradient id="markAccent" gradientUnits="userSpaceOnUse" x1="140" y1="140" x2="248" y2="248">
+      <stop offset="0" stop-color="#0b3e42"/>
+      <stop offset="1" stop-color="#2a8f83"/>
+    </linearGradient>
+    <linearGradient id="cardAccent" gradientUnits="userSpaceOnUse" x1="140" y1="140" x2="248" y2="248">
+      <stop offset="0" stop-color="#4fb3a9"/>
+      <stop offset="1" stop-color="#93e6d6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#f5efe3"/>
+
+  <!-- Lockup: mark v0 + name -->
+  <g transform="translate(88,56) scale(0.46875)">
+    <g fill="#141413">
+      <rect x="8" y="8" width="108" height="108"/>
+      <rect x="140" y="8" width="108" height="108"/>
+      <rect x="8" y="140" width="108" height="108"/>
+    </g>
+    <g fill="url(#markAccent)">
+      <rect x="140" y="140" width="48" height="48"/>
+      <rect x="200" y="140" width="48" height="48"/>
+      <rect x="140" y="200" width="48" height="48"/>
+      <rect x="200" y="200" width="48" height="48"/>
+    </g>
+  </g>
+  <text class="sg" x="240" y="159" font-size="100" font-weight="700" letter-spacing="1" fill="#141413">FDA</text>
+
+  <!-- Left column -->
+  <line x1="88" y1="204" x2="1112" y2="204" stroke="#e0d8c6" stroke-width="2"/>
+  <text class="sg" x="88" y="282" font-size="38" font-weight="600" letter-spacing="-0.3" fill="#141413">Fractal Domain Architecture</text>
+  <text class="sg" x="88" y="330" font-size="24" fill="#3d3d3a">Код вокруг бизнеса, а не вокруг типов файлов.</text>
+  <text class="sg" x="88" y="372" font-size="20" fill="#6c6a64">SvelteKit · Next.js · Nuxt — одна структура домена</text>
+
+  <!-- Layer chain: imports point down -->
+  <g class="mono" font-size="20" fill="#0f5257" text-anchor="middle">
+    <rect x="88" y="436" width="80" height="52" rx="10" fill="#e2ebe8"/>
+    <text x="128" y="469">repo</text>
+    <rect x="194" y="436" width="92" height="52" rx="10" fill="#e2ebe8"/>
+    <text x="240" y="469">model</text>
+    <rect x="312" y="436" width="68" height="52" rx="10" fill="#e2ebe8"/>
+    <text x="346" y="469">rpc</text>
+    <rect x="406" y="436" width="152" height="52" rx="10" fill="#e2ebe8"/>
+    <text x="482" y="469">controller</text>
+    <rect x="584" y="436" width="56" height="52" rx="10" fill="#e2ebe8"/>
+    <text x="612" y="469">ui</text>
+  </g>
+  <g stroke="#a79c86" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M173 462h16M185 458l4 4-4 4"/>
+    <path d="M291 462h16M303 458l4 4-4 4"/>
+    <path d="M385 462h16M397 458l4 4-4 4"/>
+    <path d="M563 462h16M575 458l4 4-4 4"/>
+  </g>
+
+  <!-- Domain card -->
+  <rect x="680" y="240" width="432" height="310" rx="14" fill="#181715" stroke="#33302b" stroke-width="1.5"/>
+
+  <g transform="translate(700,262) scale(0.1015625)">
+    <g fill="#f7f4ee">
+      <rect x="8" y="8" width="108" height="108"/>
+      <rect x="140" y="8" width="108" height="108"/>
+      <rect x="8" y="140" width="108" height="108"/>
+    </g>
+    <g fill="url(#cardAccent)">
+      <rect x="140" y="140" width="48" height="48"/>
+      <rect x="200" y="140" width="48" height="48"/>
+      <rect x="140" y="200" width="48" height="48"/>
+      <rect x="200" y="200" width="48" height="48"/>
+    </g>
+  </g>
+  <text class="mono" x="738" y="282" font-size="20" fill="#f7f4ee">src/routes/cart/</text>
+  <text class="sg" x="1092" y="282" font-size="18" letter-spacing="1.5" fill="#9a948a" text-anchor="end">ДОМЕН</text>
+  <line x1="696" y1="304" x2="1096" y2="304" stroke="#33302b" stroke-width="1.5"/>
+
+  <g class="mono" font-size="20" fill="#f7f4ee">
+    <text x="700" y="340">+page.svelte</text>
+    <text x="700" y="374">+page.server.ts</text>
+    <text x="700" y="408">stores.ts</text>
+    <text x="700" y="442">rpc.ts</text>
+    <text x="700" y="476">model.server.ts</text>
+  </g>
+  <g class="sg" font-size="18" letter-spacing="1.2" fill="#4fb3a9" text-anchor="end">
+    <text x="1092" y="340">UI</text>
+    <text x="1092" y="374">SERVER</text>
+    <text x="1092" y="408">CONTROLLER</text>
+    <text x="1092" y="442">RPC</text>
+    <text x="1092" y="476">MODEL</text>
+  </g>
+
+  <rect x="696" y="492" width="400" height="42" rx="8" fill="#14332f"/>
+  <g fill="url(#cardAccent)">
+    <rect x="712" y="503" width="8" height="8"/>
+    <rect x="724" y="503" width="8" height="8"/>
+    <rect x="712" y="515" width="8" height="8"/>
+    <rect x="724" y="515" width="8" height="8"/>
+  </g>
+  <text class="mono" x="742" y="519" font-size="20" fill="#f7f4ee">items/</text>
+  <text class="sg" x="1080" y="519" font-size="18" letter-spacing="1.2" fill="#4fb3a9" text-anchor="end">ТА ЖЕ СТРУКТУРА</text>
+
+  <!-- Footer -->
+  <text class="sg" x="88" y="596" font-size="20" fill="#6c6a64">Каждый файл — одна роль и один набор экспортов.</text>
+  <text class="sg" x="1112" y="596" font-size="22" fill="#6c6a64" text-anchor="end">fda-docs.vercel.app</text>
+</svg>
