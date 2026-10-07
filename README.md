@@ -59,7 +59,15 @@ src/routes/cart/          # домен «корзина»
 
 ## Скилл для AI-агентов
 
-FDA доступна как устанавливаемый скилл по кросс-агентному стандарту `.agents/skills`:
+FDA доступна как устанавливаемый скилл для Qwen Code, Claude Code и других агентов.
+
+Быстрый способ — CLI `skills`:
+
+```bash
+npx skills add chord-ts/fda
+```
+
+Вручную — по кросс-агентному стандарту `.agents/skills`:
 
 ```bash
 mkdir -p .agents/skills/fda

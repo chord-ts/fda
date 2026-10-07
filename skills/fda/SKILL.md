@@ -55,7 +55,7 @@ Required files in every module:
 | `rpc.ts` | RPC functions for cross-domain calls |
 | `model.server.ts` | Data operations |
 | `controller.ts`, `controller.svelte.ts`, `stores.ts`, or `state.ts` | State and utilities. These names mean one role |
-| `index.ts` | Public API. Re-exports rpc, controller, types, constants — never `model.server.ts` |
+| `index.ts` | Public API. Re-exports model, rpc, controller, types, constants |
 
 Optional files: `+layout.svelte` and `+layout.server.ts`, `types.ts`, `constants.ts`, `utils.ts`, `policy.ts`, `templates.ts`, `schema.ts`, `ui/`.
 
@@ -123,6 +123,7 @@ Only helper functions.
 Re-exports the public API of the module:
 
 ```typescript
+export * from './model.server'
 export * from './rpc'
 export * from './controller'
 export * from './types'
@@ -138,7 +139,7 @@ Parent → subdomain (top-down only):
 - State: the parent shares stores/hooks through context; derived state for a selected object is a derived store in the controller, never in markup.
 - RPC: the parent rpc aggregates subdomain rpc objects into one entry point.
 
-Sibling domains: import another domain only through its public entry `index.ts`, addressed via a configured alias (`$cart`, `@cart`), not a relative path. Whatever the domain does not re-export from `index.ts` does not exist for siblings:
+Sibling domains: call another domain only through its public rpc entry, imported via a configured alias (`$cart`, `@cart`), not a relative path:
 
 ```typescript
 // rpc.ts is a handler class, never a re-export of the model
@@ -191,7 +192,7 @@ When you review code, check each item:
 3. `model.server` and `rpc` contain no UI imports.
 4. `+layout.server.ts` has a matching `+layout.svelte`.
 5. Each file exports only its contract.
-6. Cross-domain imports go through the neighbor's public entry (`index.ts`) via a configured alias.
+6. Cross-domain imports use the neighbor's `rpc.ts` entry through an alias.
 7. Reusable UI lives in `lib/ui/`, not in a module `ui/`.
 8. `+page.server.ts` exists in every module.
 9. `rpc.ts` re-exports no model; cross-domain entries are composed handlers.

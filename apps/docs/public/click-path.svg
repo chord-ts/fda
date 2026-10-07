@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" role="img" aria-labelledby="clickTitle clickDesc">
+  <title id="clickTitle">Путь клика «удалить товар»</title>
+  <desc id="clickDesc">Запрос идёт вниз: +page.svelte, stores.removeItem, client.removeFromCart, POST /cart в +server.ts, model.removeFromCart, repo. Ответ идёт вверх: json обратно, stores.cart.set, разметка обновилась.</desc>
+
+  <style>
+    .sg { font-family: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+    .mono { font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  </style>
+
+  <rect width="900" height="560" rx="16" fill="#181715" stroke="#33302b" stroke-width="1.5"/>
+
+  <text class="sg" x="80" y="36" font-size="16" letter-spacing="1.2" fill="#9a948a">запрос идёт вниз</text>
+  <text class="sg" x="480" y="284" font-size="16" letter-spacing="1.2" fill="#4fb3a9">ответ идёт вверх</text>
+
+  <!-- Request chain -->
+  <g>
+    <rect x="80" y="48" width="340" height="56" rx="10" fill="#1f1e1b" stroke="#33302b" stroke-width="1.5"/>
+    <text class="mono" x="104" y="72" font-size="17" fill="#f7f4ee">+page.svelte</text>
+    <text class="sg" x="104" y="92" font-size="15" fill="#9a948a">клик по кнопке «удалить»</text>
+
+    <rect x="80" y="132" width="340" height="56" rx="10" fill="#1f1e1b" stroke="#33302b" stroke-width="1.5"/>
+    <text class="mono" x="104" y="156" font-size="17" fill="#f7f4ee">stores.removeItem</text>
+    <text class="sg" x="104" y="176" font-size="15" fill="#9a948a">контроллер</text>
+
+    <rect x="80" y="216" width="340" height="56" rx="10" fill="#1f1e1b" stroke="#33302b" stroke-width="1.5"/>
+    <text class="mono" x="104" y="240" font-size="17" fill="#f7f4ee">client.removeFromCart</text>
+    <text class="sg" x="104" y="260" font-size="15" fill="#9a948a">fetch POST /cart</text>
+
+    <rect x="80" y="300" width="340" height="56" rx="10" fill="#1f1e1b" stroke="#33302b" stroke-width="1.5"/>
+    <text class="mono" x="104" y="324" font-size="17" fill="#f7f4ee">+server.ts</text>
+    <text class="sg" x="104" y="344" font-size="15" fill="#9a948a">HTTP-роут: POST /cart</text>
+
+    <rect x="80" y="384" width="340" height="56" rx="10" fill="#1f1e1b" stroke="#33302b" stroke-width="1.5"/>
+    <text class="mono" x="104" y="408" font-size="17" fill="#f7f4ee">model.removeFromCart</text>
+    <text class="sg" x="104" y="428" font-size="15" fill="#9a948a">модель</text>
+
+    <rect x="80" y="468" width="340" height="56" rx="10" fill="#1f1e1b" stroke="#33302b" stroke-width="1.5"/>
+    <text class="mono" x="104" y="492" font-size="17" fill="#f7f4ee">repo</text>
+    <text class="sg" x="104" y="512" font-size="15" fill="#9a948a">источник данных</text>
+  </g>
+
+  <!-- Response chain -->
+  <g>
+    <rect x="480" y="468" width="340" height="56" rx="10" fill="#14332f" stroke="#33302b" stroke-width="1.5"/>
+    <text class="mono" x="504" y="492" font-size="17" fill="#f7f4ee">json обратно</text>
+    <text class="sg" x="504" y="512" font-size="15" fill="#9a948a">ответ сервера → клиент</text>
+
+    <rect x="480" y="384" width="340" height="56" rx="10" fill="#14332f" stroke="#33302b" stroke-width="1.5"/>
+    <text class="mono" x="504" y="408" font-size="17" fill="#f7f4ee">stores.cart.set</text>
+    <text class="sg" x="504" y="428" font-size="15" fill="#9a948a">контроллер обновляет стор</text>
+
+    <rect x="480" y="300" width="340" height="56" rx="10" fill="#14332f" stroke="#33302b" stroke-width="1.5"/>
+    <text class="mono" x="504" y="324" font-size="17" fill="#f7f4ee">разметка обновилась</text>
+    <text class="sg" x="504" y="344" font-size="15" fill="#9a948a">+page.svelte перерисовался</text>
+  </g>
+
+  <!-- Request arrows down -->
+  <g stroke="#4a463f" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M250 108v16M244 120l6 8 6-8"/>
+    <path d="M250 192v16M244 204l6 8 6-8"/>
+    <path d="M250 276v16M244 288l6 8 6-8"/>
+    <path d="M250 360v16M244 372l6 8 6-8"/>
+    <path d="M250 444v16M244 456l6 8 6-8"/>
+  </g>
+
+  <!-- Turn: repo -> json -->
+  <g stroke="#4a463f" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M424 496h46M462 490l8 6-8 6"/>
+  </g>
+
+  <!-- Response arrows up -->
+  <g stroke="#4fb3a9" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M650 464v-16M644 452l6-8 6 8"/>
+    <path d="M650 380v-16M644 368l6-8 6 8"/>
+  </g>
+</svg>

@@ -90,11 +90,7 @@ src/
 
 Как это выглядит в живом коде — на примере одного клика по кнопке «удалить товар» в корзине:
 
-```text
-+page.svelte → stores.removeItem → client.removeFromCart
-    → POST /cart (+server.ts) → model.removeFromCart → repo
-    → json обратно → stores.cart.set → разметка обновилась
-```
+![Путь клика «удалить товар»](/click-path.svg)
 
 Полный разбор домена `cart` по файлам — в [разделе 08](/08-qwen-code-skill/), где тот же код разбирается по шагам.
 
