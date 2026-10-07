@@ -1,154 +1,608 @@
 ---
+title: "Скилл FDA для AI-агентов"
+description: "Как передать правила FDA AI-агенту: установка скилла, сценарии использования, разбор правил на реальном коде и настройка под свой проект"
+---
+
+import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
+
+# Скилл FDA для AI-агентов
+
+Разделы [01–06](/01-introduction/) объясняют архитектуру FDA человеку. Этот раздел делает обратное: он передаёт те же правила AI-агенту, чтобы агент не просто писал код, а писал код, который вписывается в вашу структуру доменов, слоёв и контрактов.
+
+Скилл — это файл с инструкциями, который живёт рядом с проектом. После установки агент знает FDA так же, как знает синтаксис Svelte или Next.js: когда вы просите «создай домен корзины», он не изобретает структуру заново, а собирает её по правилам — repo внизу, UI наверху, между ними модель, RPC и контроллер.
+
+## 🤖 Зачем агенту знать про FDA
+
+Представьте типичную сцену: вы просите агента «добавь в корзину кнопку "очистить"». Без знания архитектуры агент поступает так, как учат любые туториалы: пишет `fetch('/api/cart/clear')` прямо в компонент и тащит логику подсчёта суммы в разметку. Код работает — и ломает проект изнутри: серверный код утёк в клиентский бандл, слои перемешались, следующий человек уже не поймёт, где искать логику.
+
+Проблема не в агенте, а в том, что он не знает ваших правил. Их можно записать в файл с инструкциями проекта (`AGENTS.md`, `QWEN.md`, `CLAUDE.md` — имя зависит от инструмента), но такой файл загружается в контекст целиком при каждом запросе, поэтому его держат коротким. Правила FDA объёмные: пять слоёв, десяток контрактов файлов, запреты на импорты, маппинг на три фреймворка. Для этого и существует скилл:
+
+- **Создание доменов и подмодулей.** Агент собирает структуру файлов по контракту: от `+page.svelte` до `index.ts`.
+- **Ревью кода.** Агент прогоняет изменения по чеклисту FDA и указывает на нарушения — например, что UI импортирует `model.server.ts` напрямую.
+- **Рефакторинг и миграция.** Агент переносит существующий код в домен, сохраняя направление зависимостей.
+
+<Aside type="note">
+
+Скилл не заменяет документацию. Если вы только знакомитесь с FDA, начните с [основных концепций](/02-core-concepts/) — скилл рассчитан на агента, который применяет уже описанные правила, а не на человека, который их впервые изучает.
+
+</Aside>
+
+## 🧩 Как устроен скилл
+
+Скилл — это один файл `SKILL.md` со своим frontmatter:
+
+```yaml
+---
 name: fda
-description: Fractal Domain Architecture assistant for scalable applications
+description: Fractal Domain Architecture assistant for scalable applications. Use when the user designs, creates, reviews, or refactors code that must follow FDA, or mentions domains, modules, submodules, layers, or file contracts.
+---
+```
+
+- **`name`** — имя, по которому скилл вызывается.
+- **`description`** — не подпись для человека, а набор триггеров. Агент читает описания всех доступных скиллов и решает, релевантно ли это запросу. Когда вы пишете «создай домен», «проверь слои», «вынеси это в rpc» — описание совпадает по смыслу, и правила FDA подгружаются в контекст.
+- **Тело файла** — сам свод правил: слои, направления импортов, контракты каждого файла, структура модуля, маппинг на SvelteKit, Next.js и Nuxt.
+
+Текст скилла написан на английском — осознанно: инструкции на английском модели выполняют стабильнее, к тому же скиллом смогут пользоваться и не русскоязычные команды. При этом **агенту можно писать по-русски**: он применяет правила из скилла независимо от языка запроса.
+
+И ещё важное: скилл — не догма, а отправная точка. Это обычный текстовый файл в вашем репозитории: его можно менять и адаптировать под особенности проекта, стек и договорённости команды. Как именно — расскажет [раздел про настройку](#️-настройка-под-свой-проект), а пока посмотрим, как всем этим пользоваться.
+
+Полный текст скилла приведён [в конце раздела](#-полный-текст-скилла) одним блоком для копирования.
+
+## 📦 Установка
+
+<Steps>
+
+1. **Создайте файл скилла**
+
+   В корне проекта создайте файл `.agents/skills/fda/SKILL.md`. Папка `.agents` — общий стандарт: одну и ту же папку скиллов читают разные AI-агенты, поэтому скилл становится частью репозитория и работает у всей команды независимо от того, каким инструментом она пользуется.
+
+   ```text
+   ваш-проект/
+   ├── .agents/
+   │   └── skills/
+   │       └── fda/
+   │           └── SKILL.md
+   ├── src/
+   └── package.json
+   ```
+
+2. **Скопируйте текст скилла**
+
+   Откройте раздел [«Полный текст скилла»](#-полный-текст-скилла) внизу этой страницы и скопируйте блок целиком — вместе с frontmatter `name` и `description`. Вставьте его в созданный файл.
+
+3. **Перезапустите сессию**
+
+   Агенты подхватывают новые скиллы при старте сессии. Перезапустите её, чтобы новый файл точно считался.
+
+4. **Проверьте, что скилл активен**
+
+   Задайте любой вопрос, в котором упоминается архитектура: «Какие слои выделяет FDA?» или сразу «Создай домен по FDA». Если агент отвечает терминами слоёв и контрактов — скилл работает.
+
+</Steps>
+
+<Aside type="tip">
+
+**Глобальная установка.** Хотите, чтобы FDA-скилл был доступен во всех проектах, а не в одном? У каждого агента своя домашняя папка скиллов: у Qwen Code — `~/.qwen/skills/`, у Claude Code — `~/.claude/skills/`. Точный путь смотрите в документации инструмента. Проектная версия в `.agents/` обычно имеет приоритет над глобальной.
+
+</Aside>
+
+<Aside type="note">
+
+**Агент не читает `.agents`?** Положите тот же файл в папку скиллов вашего инструмента: Qwen Code ждёт его в `.qwen/skills/fda/SKILL.md`, Claude Code — в `.claude/skills/fda/SKILL.md`. Содержимое не меняется — правила FDA не привязаны к конкретному инструменту, меняется только путь.
+
+</Aside>
+
+## 🚀 Быстрый старт
+
+Допустим, вам нужна корзина товаров. Один промпт — и агент соберёт домен:
+
+```text
+Создай домен cart по FDA: корзина товаров.
+В корзине: список товаров, изменение количества, удаление, итоговая сумма.
+```
+
+Фреймворк в промпте можно не указывать: агент определит его по проекту — заглянет в `package.json` и конфиги (`svelte.config.js`, `next.config.ts`, `nuxt.config.ts`) — или спросит напрямую. Детали стека тоже уточняйте по желанию: строка «данные — Drizzle, состояние — Svelte 5 runes» сужает вариации, а без неё агент подберёт варианты по зависимостям проекта.
+
+Структура домена от фреймворка не зависит — меняются имена файлов и место папки по конвенции роутинга:
+
+<Tabs>
+  <TabItem label="SvelteKit">
+    ```text
+    src/routes/cart/
+    ├── +page.svelte         # страница: разметка, импортирует controller
+    ├── +page.server.ts      # server load: отдаёт корзину при заходе на страницу
+    ├── +server.ts           # HTTP-роут: экшены корзины
+    ├── rpc.ts               # функции для других доменов
+    ├── client.ts            # браузерные вызовы API модуля
+    ├── model.server.ts      # данные: CRUD через repo
+    ├── controller.svelte.ts # реактивное состояние (runes)
+    ├── types.ts             # CartItem, Cart
+    ├── constants.ts         # лимиты, ключи
+    ├── utils.ts             # расчёт скидок, форматирование
+    ├── index.ts             # публичный API домена
+    └── ui/                  # компоненты корзины
+        └── CartItemCard.svelte
+    ```
+  </TabItem>
+  <TabItem label="Next.js">
+    ```text
+    src/app/cart/
+    ├── page.tsx             # страница: разметка, импортирует controller
+    ├── page.server.tsx      # server load: отдаёт корзину при заходе на страницу
+    ├── actions.ts           # server actions: экшены корзины
+    ├── route.ts             # HTTP-эндпоинт корзины
+    ├── rpc.ts               # функции для других доменов
+    ├── client.ts            # браузерные вызовы API модуля
+    ├── model.ts             # данные: CRUD через repo
+    ├── controller.ts        # состояние и обработчики
+    ├── types.ts             # CartItem, Cart
+    ├── constants.ts         # лимиты, ключи
+    ├── utils.ts             # расчёт скидок, форматирование
+    ├── index.ts             # публичный API домена
+    └── ui/                  # компоненты корзины
+        └── CartItemCard.tsx
+    ```
+  </TabItem>
+  <TabItem label="Nuxt">
+    ```text
+    src/pages/cart/
+    ├── index.vue            # страница: разметка, импортирует controller
+    ├── setup.ts             # server load: отдаёт корзину при заходе на страницу
+    ├── server/api/cart.ts   # HTTP-эндпоинт корзины
+    ├── rpc.ts               # функции для других доменов
+    ├── client.ts            # браузерные вызовы API модуля
+    ├── model.ts             # данные: CRUD через repo
+    ├── composables.ts       # реактивное состояние
+    ├── types.ts             # CartItem, Cart
+    ├── constants.ts         # лимиты, ключи
+    ├── utils.ts             # расчёт скидок, форматирование
+    ├── index.ts             # публичный API домена
+    └── ui/                  # компоненты корзины
+        └── CartItemCard.vue
+    ```
+  </TabItem>
+</Tabs>
+
+Имена файлов — отправная точка, а не жёсткая константа. Если команда называет контроллер иначе или в вашем Next-проекте принято класть API в `app/api/`, поменяйте это в скилле: он лежит в вашем репозитории и адаптируется под конвенции проекта и ваш стек — [как именно, показано ниже](#️-настройка-под-свой-проект).
+
+Это не теоретические примеры: домен `cart` для SvelteKit целиком лежит в [рабочем примере репозитория](https://github.com/chord-ts/fda/tree/main/apps/example-sveltekit) — ниже разберём его код по слоям.
+
+## 🧭 Сценарии использования
+
+### Создание домена
+
+Самый частый случай — новый функционал:
+
+```text
+Создай домен dashboard по FDA.
+Метрики: выручка за месяц, новые пользователи, конверсия.
+Данные бери из домена analytics, который уже есть в проекте.
+```
+
+Агент создаёт обязательные файлы — страницу, server load, `rpc.ts`, модель, контроллер, `index.ts` — с именами по конвенции вашего фреймворка, добавляет опциональные по мере надобности и проверяет результат по чеклисту. Если фреймворк не указан, агент определит его по проекту или спросит.
+
+<Aside type="tip">
+
+Если просите «создай модуль», агент трактует это так же: домен — это модуль верхнего уровня внутри `routes/` (или `pages/`). Разница в терминах, не в структуре.
+
+</Aside>
+
+### Создание подмодуля
+
+Когда внутри домена вырастает самостоятельный кусок функциональности, он оформляется как подмодуль:
+
+```text
+В домене checkout выдели подмодуль _payment: расчёт способов оплаты.
+Он внутренний, отдельная страница не нужна.
+```
+
+Префикс `_` решает судьбу подмодуля: `_payment` скрыт от роутинга и используется только внутри домена, а `items` без префикса получил бы собственный URL (`/cart/items`). Внутри обоих — та же структура, что и у домена: фрактальность в действии. Подробнее — в [разделе про домены и подмодули](/04-domains-submodules/).
+
+### Кросс-доменное взаимодействие
+
+Домен заказов должен показывать названия товаров из домена товаров. Прямой импорт модели — нарушение границ, и агент это знает:
+
+```text
+Домен order при создании заказа должен узнавать цену товара из products.
+Свяжи их по FDA.
+```
+
+Агент вызовет функцию из `products/rpc.ts` — публичного API домена — и не полезет в чужой `model.server.ts`. Как это выглядит в коде, показано [ниже](#-как-агент-исправляет-нарушения).
+
+### Ревью существующего кода
+
+Скилл превращает агента в ревьюера, который смотрит на код глазами архитектуры:
+
+```text
+Проверь routes/dashboard на соответствие FDA.
+Перечисли нарушения и предложи исправления.
+```
+
+Агент пройдётся по чеклисту: есть ли `index.ts`, не импортирует ли UI репозитории и модели, соблюдают ли файлы свои контракты, есть ли у `+layout.server.ts` пара `+layout.svelte`. Каждому нарушению — объяснение и конкретный фикс.
+
+### Миграция legacy-кода
+
+Перенос старого кода в домен — по сути рефакторинг с сохранением поведения:
+
+```text
+Перенеси legacy/components/UserPanel.svelte в домен users по FDA.
+Логику данных — в model, состояние — в controller, разметку — в ui/.
+```
+
+## 🔍 Что знает агент: свод правил
+
+Скилл кодирует всё, что агенту нужно знать о FDA. Здесь — карта этих знаний со ссылками на разделы, где правила объяснены для человека.
+
+### Слои и направление зависимостей
+
+```text
+UI (+page.svelte, ui/)
+  ↓
+Controller (controller.ts, stores.ts)
+  ↓
+RPC (rpc.ts, +server.ts)   Model (model.server.ts, schema.ts)
+  ↓                           ↓
+Repo (lib/server/repo/db, redis, vault, keto)
+  ↓
+Внешние источники данных
+```
+
+Каждый слой импортирует только то, что ниже. UI никогда не касается репозиториев и моделей; модель не знает про HTTP; репозиторий — единственное место, где живёт подключение к внешнему источнику. Данные при этом текут в обе стороны: запрос идёт вниз, результат — вверх. Полная таблица слоёв с запретами — в [основных концепциях](/02-core-concepts/).
+
+### Контракты файлов
+
+Агент знает роль каждого файла в домене: `schema.ts` — только таблицы ORM, `model.server.ts` — только операции с данными, `policy.ts` — только правила доступа, и так далее. Когда вы просите «добавь валидацию в types», агент не станет встраивать логику в типы — он предложит правильное место. Контракты разобраны в [разделе 05](/05-file-contracts/).
+
+### Обязательные и опциональные файлы
+
+Домен обязан иметь `+page.svelte`, `+page.server.ts`, `rpc.ts`, `model.server.ts`, контроллер и `index.ts`. Остальное — `types.ts`, `policy.ts`, `templates.ts`, `ui/` — добавляется, когда задача этого требует. Агент не создаёт файлы «на всякий случай» и не пропускает обязательные.
+
+### Маппинг на фреймворки
+
+| Концепция | SvelteKit | Next.js | Nuxt |
+|-----------|-----------|---------|------|
+| Страница | `+page.svelte` | `page.tsx` | `index.vue` |
+| Layout | `+layout.svelte` | `layout.tsx` | `layout.vue` |
+| Server load | `+page.server.ts` | `page.server.tsx` | `setup.ts` |
+| Server actions | `+page.server.ts` | `actions.ts` | `server/` |
+| API-роуты | `+server.ts` | `route.ts` | `/server/api/` |
+| RPC | `rpc.ts` | `rpc.ts` | `rpc.ts` |
+| Model | `model.server.ts` | `model.ts` | `model.ts` |
+
+RPC-слой и модель во всех фреймворках называются одинаково — это то, что делает FDA переносимым между ними.
+
+## 🧪 Сквозной пример: домен cart
+
+Посмотрим, как правила выглядят в живом коде. Разбор построен на SvelteKit — это реальный домен из [рабочего примера репозитория](https://github.com/chord-ts/fda/tree/main/apps/example-sveltekit), корзина с добавлением и удалением товаров. Если вы на Next.js или Nuxt, роли у файлов те же — отличаются только имена и место по конвенции роутинга (таблица — в разделе [«Маппинг на фреймворки»](#маппинг-на-фреймворки)).
+
+**1. Репозиторий — единственный, кто знает про источник данных.** В примере это заглушка поверх Drizzle; в продакшене здесь была бы реальная инициализация клиента:
+
+```ts
+// lib/server/repo/db.ts
+/** Коннектор к внешнему источнику данных. */
+export { db } from "./db.mock";
+```
+
+**2. Модель — операции с данными без HTTP и UI.** Каждый метод модели дёргает repo и возвращает готовый доменный объект:
+
+```ts
+// routes/cart/model.server.ts
+import { db } from "$lib/server/repo/db.mock";
+import type { Cart, CartItem } from "./types";
+
+export async function getCart(): Promise<Cart> {
+    const items = await db.table<CartItem & { id: string }>("cart_items").findMany();
+    return calculateCart(items);
+}
+
+export async function removeFromCart(itemId: string): Promise<Cart> {
+    const table = db.table<CartItem & { id: string }>("cart_items");
+    const filtered = (await table.findMany()).filter((i) => i.id !== itemId);
+    (table as any).rows = filtered;
+    return calculateCart(filtered);
+}
+
+function calculateCart(items: (CartItem & { id: string })[]): Cart {
+    const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const totalCount = items.reduce((sum, i) => sum + i.quantity, 0);
+    return { items, total, totalCount };
+}
+```
+
+Обратите внимание: в модели нет ни строчки про HTTP, ни строчки про интерфейс. Её можно вызывать из load-функции, из RPC или из фонового скрипта — результат один и тот же.
+
+**3. Серверный слой страницы — отдаёт данные при заходе на URL:**
+
+```ts
+// routes/cart/+page.server.ts
+import { getCart } from "./model.server";
+
+export const load = async () => {
+    const cart = await getCart();
+    return { cart };
+};
+```
+
+**4. HTTP-роут — принимает действия пользователя.** Парсит запрос, выбирает метод модели, возвращает JSON. Никакой бизнес-логики:
+
+```ts
+// routes/cart/+server.ts
+import { json } from "@sveltejs/kit";
+import * as model from "./model.server";
+
+export const POST = async ({ request }) => {
+    const body = await request.json();
+    switch (body.action) {
+        case "add":
+            return json(await model.addToCart(body.productId, body.quantity ?? 1));
+        case "remove":
+            return json(await model.removeFromCart(body.itemId));
+        default:
+            return json({ error: "Unknown action" }, { status: 400 });
+    }
+};
+```
+
+**5. Клиент — тонкая обёртка над fetch.** Живёт в домене, знает только адреса своего модуля:
+
+```ts
+// routes/cart/client.ts
+import type { Cart } from "./types";
+
+export async function removeFromCart(itemId: string): Promise<Cart> {
+    const res = await fetch("/cart", {
+        method: "POST",
+        body: JSON.stringify({ action: "remove", itemId }),
+    });
+    return res.json();
+}
+```
+
+**6. Контроллер — реактивное состояние.** Stores хранят корзину и дергают клиент:
+
+```ts
+// routes/cart/stores.ts
+import { writable, derived } from "svelte/store";
+import * as client from "./client";
+import type { Cart } from "./types";
+
+export const cart = writable<Cart>({ items: [], total: 0, totalCount: 0 });
+export const isEmpty = derived(cart, ($cart) => $cart.items.length === 0);
+
+export async function removeItem(itemId: string) {
+    const updated = await client.removeFromCart(itemId);
+    cart.set(updated);
+}
+```
+
+**7. Страница — только разметка.** Никаких fetch, никаких расчётов:
+
+```svelte
+<!-- routes/cart/+page.svelte -->
+<script lang="ts">
+    import { cart, removeItem, formatPrice } from "./stores";
+
+    let { data } = $props();
+
+    $effect(() => {
+        cart.set(data.cart);
+    });
+</script>
+
+{#each $cart.items as item (item.id)}
+    <div class="cart-item">
+        <div class="name">{item.name}</div>
+        <div class="subtotal">{formatPrice(item.price * item.quantity)}</div>
+        <button onclick={() => removeItem(item.id)}>×</button>
+    </div>
+{/each}
+```
+
+Соберём путь одного клика по кнопке «удалить»:
+
+```text
++page.svelte → stores.removeItem → client.removeFromCart
+    → POST /cart (+server.ts) → model.removeFromCart → repo
+    → json обратно → stores.cart.set → разметка обновилась
+```
+
+Семь файлов, каждый делает одну вещь. Хотите поменять базу — правите repo. Хотите поменять API — правите `+server.ts` и `client.ts`. Хотите поменять поведение кнопки — правите stores. Ни одно изменение не расползается по всему домену — это и есть практическая выгода слоёв, о которой агент помнит при каждой генерации кода.
+
+## 🩹 Как агент исправляет нарушения
+
+Скилл работает и в обратную сторону: когда вы приносите код, который нарушает FDA, агент называет правило и предлагает фикс. Три типичных случая.
+
+### Нарушение 1: UI импортирует модель напрямую
+
+```svelte
+<!-- ❌ Так агент не напишет -->
+<script lang="ts">
+    import { getCart } from "./model.server"; // server-only код
+</script>
+```
+
+`model.server.ts` импортирует репозитории, а те — соединение с базой и, например, строки доступа. Такой импорт утянет серверный код в клиентский бандл — секреты окажутся в браузере. Агент разведёт пути: начальные данные — через `load` в `+page.server.ts`, изменения — через цепочку stores → client → `+server.ts` → model. Ровно так, как в примере `cart` выше.
+
+### Нарушение 2: домен лезет в чужую модель
+
+```ts
+// ❌ routes/orders/model.server.ts
+import { getProductById } from "$routes/products/model.server";
+```
+
+Границы доменов существуют, чтобы изменения в `products` не ломали `orders`. Агент перепишет импорт на публичный API:
+
+```ts
+// ✅ routes/orders/model.server.ts
+import { getProductById } from "../products/rpc";
+```
+
+### Нарушение 3: общий компонент лежит в домене
+
+```text
+routes/dashboard/ui/Button.svelte — нужен и cart, и auth
+```
+
+Компонент, который нужен одному домену, живёт в его `ui/`. Компонент, который нужен нескольким, переезжает в `lib/ui/` — инфраструктуру без бизнес-логики. Агент предложит именно переезд, а не копирование файла в каждый домен.
+
+## ⚙️ Настройка под свой проект
+
+Скилл — это текстовый файл в вашем репозитории, и он принадлежит вам так же, как `.editorconfig`. Его можно и нужно адаптировать под особенности проекта: свой стек, свои источники данных, конвенции команды. Тогда агент будет генерировать код в стиле вашей команды, а не в абстрактном FDA-стиле. Откройте `.agents/skills/fda/SKILL.md` и правьте под себя.
+
+**Добавить свой источник данных.** Если в проекте есть, например, ClickHouse для аналитики, допишите его в слой repo — агент начнёт учитывать его при генерации:
+
+```diff
+| Repo | lib/server/repo/* | Подключения к внешним источникам |
++ Репозиторий аналитики: lib/server/repo/clickhouse/
+```
+
+**Сменить стек.** Правила FDA не привязаны к Drizzle. Если проект на Prisma или Zod — найдите в тексте упоминания и замените. Структура слоёв при этом не меняется.
+
+**Закрепить конвенции команды.** Например, вы договорились называть контроллер всегда `controller.svelte.ts` и не использовать stores из Svelte 4 — удалите упоминание legacy-варианта из скилла, и агент перестанет его предлагать.
+
+**Настроить триггеры.** Поле `description` в frontmatter определяет, когда скилл активируется. Если команда зовёт домены «фичами», добавьте это слово в описание — агент будет реагировать и на ваш словарь.
+
+<Aside type="caution">
+
+Таблицу слоёв и направление импортов лучше не удалять — это ядро скилла, без него агент потеряет карту зависимостей и вернётся к «туториальному» стилю генерации.
+
+</Aside>
+
+## ⚠️ Ограничения
+
+- **Скилл — не линтер.** Он не проверяет код автоматически при сохранении файла. Ревью нужно просить явно: «проверь модуль X на соответствие FDA». Автоматическую проверку импортов на CI стоит делать отдельными правилами ESLint.
+- **Качество зависит от модели.** Чем способнее модель, тем точнее агент следует правилам. Финальную проверку перед мержем всё равно делает человек — по [чеклисту из раздела 06](/06-faq-checklist/).
+- **Скилл знает правила, но не ваш проект.** Он не в курсе, какие домены у вас уже есть, — агент читает структуру репозитория сам и сочетает её с правилами скилла. Если проект не следует FDA, явно укажите, какие части трогать.
+- **Правила не самообновляются.** Страница, которую вы читаете, — источник свежей версии. Периодически сверяйте текст в своём `SKILL.md` с блоком ниже.
+
+## 📄 Полный текст скилла
+
+Скопируйте блок целиком — с frontmatter — в `.agents/skills/fda/SKILL.md`:
+
+````markdown
+---
+name: fda
+description: Fractal Domain Architecture assistant for scalable applications. Use when the user designs, creates, reviews, or refactors code that must follow FDA, or mentions domains, modules, submodules, layers, or file contracts.
 ---
 
 # FDA (Fractal Domain Architecture)
 
-You are an expert in Fractal Domain Architecture (FDA). You help developers design, implement, and validate FDA-compliant code.
-
-## Documentation
+You are an expert in Fractal Domain Architecture (FDA). You help developers design, create, and validate FDA-compliant code.
 
 Reference: https://fda-docs.vercel.app/
 
 ## Core Principles
 
-1. **Fractality**: Identical structure at all levels - components -> submodules -> domains -> applications
-2. **Layer Separation**: Strict separation - repositories -> model -> controller -> state -> UI
-3. **Explicit Contracts**: Every file has a strictly defined role and exports
-4. **Framework-agnostic**: Works with SvelteKit, Next.js, Nuxt, etc.
+1. **Fractality.** The same structure repeats at every level: component → submodule → domain → application.
+2. **Layer separation.** Strict layer order: repo → model → RPC → controller → UI.
+3. **Explicit contracts.** Each file has one role and one set of exports.
+4. **Framework-agnostic.** The same rules apply to SvelteKit, Next.js, and Nuxt.
 
-## Architecture Layers (Bottom to Top)
+A domain is a top-level module inside `routes/` or `pages/`. A module is any folder that follows the structure below. A submodule is a module inside a module.
 
-| Layer | Files | Responsibility | Rules |
-|-------|-------|----------------|-------|
-| Repo | `lib/server/repo/*` | External data sources | No business logic |
-| Model | `model.server.ts`, `schema.ts` | Data logic, CRUD | No rich business logic, no UI |
-| RPC | `rpc.ts` | API endpoints | Uses models, no UI |
-| Controller | `controller.ts`, `controller.svelte.ts` | State management | No external sources, no UI components |
-| UI | `+page.svelte`, `ui/` | Display, input | No direct repo/rpc/model imports |
+## Layers
+
+Data flows from UI down to repositories. Each layer imports only from the layers below it.
+
+| Layer | Files | Responsibility | Must not |
+|---|---|---|---|
+| Repo | `lib/server/repo/*` | Connections to external data sources | Contain business logic |
+| Model | `model.server.ts`, `schema.ts` | Data logic, CRUD, transactions | Contain UI logic |
+| RPC | `rpc.ts`, `+server.ts` | API endpoints for the frontend and other domains | Import UI |
+| Controller | `controller.ts`, `controller.svelte.ts`, `stores.ts`, `state.ts` | Reactive state and handlers | Import repo or UI components |
+| UI | `+page.svelte`, `ui/` | Display and user input | Import repo, model, or rpc directly |
 
 ## Dependency Rules
 
-- UI imports ONLY from: controller/stores, types, constants, ui/, lib/ui/
-- Controller imports from: rpc, model, types, constants, lib/*
-- Model imports from: repo, schema, types, lib/*
-- RPC imports from: model, repo, types, lib/*
-- repo imports from: external APIs, lib/*
+- UI imports from: controller, types, constants, `ui/`, `lib/ui/`
+- Controller imports from: rpc, model, types, constants, `lib/*`
+- Model imports from: repo, schema, types, `lib/*`
+- RPC imports from: model, repo, types, `lib/*`
+- Repo imports from: external APIs, `lib/*`
 
-NEVER:
-- UI -> repo (direct)
-- UI -> model.server (direct)
-- UI -> rpc (direct)
-- Model -> UI
-- RPC -> UI
-- repo -> UI
+Never write these imports:
+
+- UI → repo, UI → `model.server`, UI → rpc
+- Controller → UI components, Model → UI, RPC → UI
+- Domain A → `model.server.ts` of domain B. Call domain B through its rpc instead.
 
 ## Module Structure
 
-Every domain/module MUST have:
+Required files in every module:
 
-Required:
-- `+page.svelte` - page component
-- `+page.server.ts` - load function + actions
-- `rpc.ts` - RPC functions for cross-domain calls
-- `model.server.ts` - data operations
-- `controller.ts` or `controller.svelte.ts` - state + utilities
-- `index.ts` - public API (exports from model, rpc, controller, types, constants)
+| File | Role |
+|---|---|
+| `+page.svelte` | Page component |
+| `+page.server.ts` | Server load and actions. Create it even when it stays empty |
+| `rpc.ts` | RPC functions for cross-domain calls |
+| `model.server.ts` | Data operations |
+| `controller.ts`, `controller.svelte.ts`, `stores.ts`, or `state.ts` | State and utilities. These names mean one role |
+| `index.ts` | Public API. Re-exports model, rpc, controller, types, constants |
 
-Optional:
-- `+layout.svelte` + `+layout.server.ts`
-- `types.ts` - TypeScript interfaces
-- `constants.ts` - constants/enums
-- `utils.ts` - helpers
-- `policy.ts` - authorization
-- `templates.ts` - form schemas
-- `schema.ts` - local ORM schema (rare)
-- `ui/` - module-specific components
+Optional files: `+layout.svelte` and `+layout.server.ts`, `types.ts`, `constants.ts`, `utils.ts`, `policy.ts`, `templates.ts`, `schema.ts`, `ui/`.
 
-## Submodule Types
+If `+layout.server.ts` exists, `+layout.svelte` must exist too.
 
-- `module/_sub/` - internal submodule (no route, prefix with _)
-- `module/sub/` - public submodule (has route)
+## Submodules
 
-Both have the same internal structure as modules.
+- `module/_sub/` — internal submodule. The prefix `_` hides it from routing.
+- `module/sub/` — public submodule. It has its own route.
+
+Both follow the same structure as modules.
 
 ## File Contracts
 
-### schema.ts
-```typescript
-// ONLY ORM table definitions
-export const users = pgTable(...)
-```
+### `schema.ts`
+Only ORM table definitions.
 
-### model.server.ts
-```typescript
-// ONLY data operations via repo
-export const getUser = async (id: string) => { ... }
-export const createUser = async (data: CreateUserInput) => { ... }
-```
+### `model.server.ts`
+Only data operations that call repo functions.
 
-### rpc.ts
-```typescript
-// ONLY API handlers
-export const authenticateUser: Rpc<'auth/authenticate'> = async ({ email, password }) => { ... }
-```
+### `rpc.ts`
+Only API handlers. Each handler validates its input and calls one model function.
 
-### controller.ts / controller.svelte.ts
-```typescript
-// ONLY reactive state and handlers
+### `controller.ts` / `controller.svelte.ts` / `stores.ts` / `state.ts`
+Only reactive state and handlers.
 
-// Svelte 5 runes (preferred)
+Svelte 5 runes (preferred):
+
+```typescript
 class UserController {
   user = $state<User | null>(null)
-  async login(email: string, password: string) { ... }
+
+  async login(email: string, password: string) { /* ... */ }
 }
+
 export const userController = new UserController()
-
-// Svelte 4 stores (legacy)
-export const userStore = writable(null)
-export const login = async (email: string, password: string) => { ... }
 ```
 
-### +page.svelte
-```svelte
-<!-- ONLY markup, imports controller -->
-<script>
-  // Svelte 5 runes
-  import { userController } from './controller.svelte'
+Svelte 4 stores (legacy):
 
-  // Svelte 4 stores
-  import { userStore, login } from './controller'
-</script>
-```
-
-### policy.ts
 ```typescript
-// ONLY access rules
-export const canEditUser = (user: User, target: User) => boolean
+export const user = writable<User | null>(null)
+
+export const login = async (email: string, password: string) => { /* ... */ }
 ```
 
-### utils.ts
-```typescript
-// ONLY helpers
-export const formatUser = (user: User) => string
-```
+### `+page.svelte`
+Only markup. It imports state from the controller. It contains no data fetching.
 
-### constants.ts
-```typescript
-// ONLY const/enum
-export const MAX_SIZE = 1024
-```
+### `policy.ts`
+Only access rules.
 
-### types.ts
-```typescript
-// ONLY types
-export interface User { ... }
-```
+### `types.ts`
+Only types and interfaces.
 
-### index.ts
+### `constants.ts`
+Only constants and enums.
+
+### `utils.ts`
+Only helper functions.
+
+### `index.ts`
+Re-exports the public API of the module:
+
 ```typescript
-// Central export - MUST exist
 export * from './model.server'
 export * from './rpc'
 export * from './controller'
@@ -158,54 +612,70 @@ export * from './constants'
 
 ## Cross-Domain Communication
 
-ALWAYS use RPC exports:
+Call another domain only through its rpc:
+
 ```typescript
-// Good: importing from another domain
 import { getProductById } from '../products/rpc'
 ```
 
-NEVER import model directly from another domain.
+Never import the `model.server.ts`, repo, or controller of another domain.
+
+## Forms and Routes
+
+Handle form submits in the `actions` of `+page.server.ts`. Handle dynamic routes with a `[id]/` subfolder.
+
+## Reusable Components
+
+A component used by one module goes to the `ui/` folder of that module. A component used by several modules goes to `lib/ui/`. Global stores go to `lib/universal/stores/`.
 
 ## Creating a New Domain
 
-When asked to create a new domain/module:
+1. Ask which framework the project uses when you do not know.
+2. Create the folder structure for that framework.
+3. Create the required files from the table above.
+4. Add optional files when the task needs them.
+5. Re-export the public API from `index.ts`.
+6. Check the dependency rules for each new file.
+7. Run the validation checklist.
 
-1. Ask what framework is being used (SvelteKit/Next/Nuxt)
-2. Create folder structure based on framework routing
-3. Add required files: +page, +page.server, rpc, model.server, controller, index
-4. Add optional files as needed: types, constants, utils, policy, ui/
-5. Ensure index.ts exports all public API
-6. Verify dependency rules are followed
-7. Use checklist to validate
+## Validation Checklist
 
-## Validation Rules
+When you review code, check each item:
 
-When reviewing code, check:
+1. Every module has `index.ts`.
+2. UI imports no repo, model, or rpc directly.
+3. `model.server` and `rpc` contain no UI imports.
+4. `+layout.server.ts` has a matching `+layout.svelte`.
+5. Each file exports only its contract.
+6. Cross-domain imports use `rpc.ts`.
+7. Reusable UI lives in `lib/ui/`, not in a module `ui/`.
+8. `+page.server.ts` exists in every module.
 
-1. Every module has index.ts
-2. UI doesn't import repo/model/rpc directly
-3. No UI imports in model/rpc layers
-4. +layout.server.ts has matching +layout.svelte
-5. File contracts are respected (each file exports only its role)
-6. Cross-domain imports use rpc.ts
-7. Reusable UI is in lib/ui/, not module ui/
-
-## Framework Mappings
+## Framework Mapping
 
 | Concept | SvelteKit | Next.js | Nuxt |
-|---------|-----------|---------|------|
+|---|---|---|---|
 | Page | `+page.svelte` | `page.tsx` | `index.vue` |
 | Layout | `+layout.svelte` | `layout.tsx` | `layout.vue` |
-| Server Load | `+page.server.ts` | `page.server.tsx` | `setup.ts` |
-| Server Actions | `+page.server.ts` (actions) | `actions.ts` | `server/` |
-| API Routes | `+server.ts` | `route.ts` | `/server/api/` |
+| Server load | `+page.server.ts` | `page.server.tsx` | `setup.ts` |
+| Server actions | `+page.server.ts` | `actions.ts` | `server/` |
+| API routes | `+server.ts` | `route.ts` | `/server/api/` |
 | RPC | `rpc.ts` | `rpc.ts` | `rpc.ts` |
 | Model | `model.server.ts` | `model.ts` | `model.ts` |
 
 ## Response Style
 
-- Be concise but thorough
-- Always reference FDA principles
-- When suggesting code, ensure it follows layer separation
-- If code violates FDA rules, explain why and suggest fix
-- Prefer explicit contracts over implicit behavior
+- Answer briefly but completely.
+- Name the FDA principle behind each decision you explain.
+- Follow the layer separation in every code suggestion.
+- When code breaks an FDA rule, name the rule and propose a fix.
+- Prefer explicit contracts over implicit behavior.
+````
+
+## 🔗 Что дальше
+
+→ [FAQ и чеклист](/06-faq-checklist/) — ручная проверка модуля перед мержем
+
+→ [Контракты файлов](/05-file-contracts/) — полное описание роли каждого файла
+
+→ [Рабочий пример SvelteKit](https://github.com/chord-ts/fda/tree/main/apps/example-sveltekit) — домен `cart` целиком

@@ -53,7 +53,7 @@ export default defineConfig({
               link: "/06-faq-checklist/",
             },
             {
-              label: "Qwen Code Skill",
+              label: "Скилл для AI-агентов",
               link: "/07-qwen-code-skill/",
             },
           ],
