@@ -5,8 +5,11 @@ import { rehypeMermaid } from "./src/plugins/rehype-mermaid.js";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://fda-docs.vercel.app/",
+  site: "https://fda-docs.com/",
   base: "/",
+  redirects: {
+    "/04-domains-submodules/": "/04-domains-subdomains/",
+  },
   mdx: {
     rehypePlugins: [rehypeMermaid],
   },
@@ -59,7 +62,7 @@ export default defineConfig({
           tag: "meta",
           attrs: {
             property: "og:image",
-            content: "https://fda-docs.vercel.app/og.png",
+            content: "https://fda-docs.com/og.png",
           },
         },
         {
@@ -75,14 +78,14 @@ export default defineConfig({
           attrs: {
             property: "og:image:alt",
             content:
-              "Знак FDA и домен cart со слоями UI, Server, Controller, RPC и Model; подмодуль items повторяет ту же структуру",
+              "Знак FDA и домен cart со слоями UI, Server, Controller, RPC и Model; субдомен items повторяет ту же структуру",
           },
         },
         {
           tag: "meta",
           attrs: {
             name: "twitter:image",
-            content: "https://fda-docs.vercel.app/og.png",
+            content: "https://fda-docs.com/og.png",
           },
         },
         {
@@ -90,7 +93,7 @@ export default defineConfig({
           attrs: {
             name: "twitter:image:alt",
             content:
-              "Знак FDA и домен cart со слоями UI, Server, Controller, RPC и Model; подмодуль items повторяет ту же структуру",
+              "Знак FDA и домен cart со слоями UI, Server, Controller, RPC и Model; субдомен items повторяет ту же структуру",
           },
         },
       ],
@@ -118,20 +121,24 @@ export default defineConfig({
               link: "/03-project-structure/",
             },
             {
-              label: "Домены и подмодули",
-              link: "/04-domains-submodules/",
+              label: "Домены и субдомены",
+              link: "/04-domains-subdomains/",
             },
             {
               label: "Контракты файлов",
               link: "/05-file-contracts/",
             },
             {
+              label: "Кросс-доменное взаимодействие",
+              link: "/06-cross-domain-interactions/",
+            },
+            {
               label: "FAQ и Checklist",
-              link: "/06-faq-checklist/",
+              link: "/07-faq-checklist/",
             },
             {
               label: "Скилл для AI-агентов",
-              link: "/07-qwen-code-skill/",
+              link: "/08-qwen-code-skill/",
             },
           ],
         },

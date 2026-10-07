@@ -1,6 +1,6 @@
 # FDA (Fractal Domain Architecture)
 
-Documentation: https://fda-docs.vercel.app/
+Documentation: https://fda-docs.com/
 
 ## Overview
 
@@ -8,7 +8,7 @@ FDA is an architectural approach for building complex applications based on frac
 
 ## Core Principles
 
-1. **Fractality**: Identical structure at all levels of abstraction: components -> submodules -> domains -> applications.
+1. **Fractality**: Identical structure at all levels of abstraction: components -> subdomains -> domains -> applications.
 2. **Layer Separation**: Strict separation: repositories -> model -> controller -> state -> UI.
 3. **Explicit Contracts**: Every file has a strictly defined role and exports.
 4. **Framework-agnostic**: Architecture is independent of meta-framework (SvelteKit/Nuxt/Next).
@@ -70,7 +70,7 @@ src/
 └── setup/                  # Startup scenarios
 ```
 
-## Domains and Submodules
+## Domains and Subdomains
 
 ### Module
 A group of files implementing specific functionality (e.g., `auth`, `dashboard`, `products`).
@@ -93,12 +93,12 @@ Optional files:
 - `schema.ts` - ORM schema
 - `ui/` - internal components
 
-### Submodule
+### Subdomain
 A module inside a module. Has its own structure.
 
 Types:
-- `_prefix` (e.g., `_analytics`) - internal submodule, no page
-- `prefix` (e.g., `analytics`) - submodule with its own page/route
+- `_prefix` (e.g., `_analytics`) - internal subdomain, no page
+- `prefix` (e.g., `analytics`) - subdomain with its own page/route
 
 ## File Contracts
 

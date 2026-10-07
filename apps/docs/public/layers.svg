@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="layersTitle layersDesc">
+  <title id="layersTitle">Слои домена FDA</title>
+  <desc id="layersDesc">Цепочка слоёв сверху вниз: UI, Controller, RPC, Model, Repo и внешние источники данных. Импорты смотрят только вниз, данные возвращаются вверх.</desc>
+
+  <style>
+    .sg { font-family: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+    .mono { font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  </style>
+
+  <rect width="900" height="600" rx="16" fill="#181715" stroke="#33302b" stroke-width="1.5"/>
+
+  <!-- Rails: imports down, data up -->
+  <g stroke="#4fb3a9" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M190 68V532M184 524l6 8 6-8"/>
+  </g>
+  <text class="sg" x="166" y="300" font-size="18" fill="#4fb3a9" text-anchor="middle" transform="rotate(-90 166 300)">импорты смотрят только вниз</text>
+  <g stroke="#9a948a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M710 532V68M704 76l6-8 6 8"/>
+  </g>
+  <text class="sg" x="734" y="300" font-size="18" fill="#9a948a" text-anchor="middle" transform="rotate(90 734 300)">данные возвращаются вверх</text>
+
+  <!-- Nodes -->
+  <g>
+    <rect x="250" y="40" width="400" height="56" rx="10" fill="#1f1e1b" stroke="#33302b" stroke-width="1.5"/>
+    <text class="sg" x="274" y="65" font-size="22" font-weight="600" fill="#f7f4ee">UI</text>
+    <text class="mono" x="274" y="85" font-size="17" fill="#9a948a">+page.svelte, ui/</text>
+
+    <rect x="250" y="132" width="400" height="56" rx="10" fill="#1f1e1b" stroke="#33302b" stroke-width="1.5"/>
+    <text class="sg" x="274" y="157" font-size="22" font-weight="600" fill="#f7f4ee">Controller</text>
+    <text class="mono" x="274" y="177" font-size="17" fill="#9a948a">controller.ts, stores.ts</text>
+
+    <rect x="250" y="224" width="400" height="56" rx="10" fill="#1f1e1b" stroke="#33302b" stroke-width="1.5"/>
+    <text class="sg" x="274" y="249" font-size="22" font-weight="600" fill="#f7f4ee">RPC</text>
+    <text class="mono" x="274" y="269" font-size="17" fill="#9a948a">rpc.ts, +server.ts</text>
+
+    <rect x="250" y="316" width="400" height="56" rx="10" fill="#1f1e1b" stroke="#33302b" stroke-width="1.5"/>
+    <text class="sg" x="274" y="341" font-size="22" font-weight="600" fill="#f7f4ee">Model</text>
+    <text class="mono" x="274" y="361" font-size="17" fill="#9a948a">model.server.ts, schema.ts</text>
+
+    <rect x="250" y="408" width="400" height="56" rx="10" fill="#1f1e1b" stroke="#33302b" stroke-width="1.5"/>
+    <text class="sg" x="274" y="433" font-size="22" font-weight="600" fill="#f7f4ee">Repo</text>
+    <text class="mono" x="274" y="453" font-size="17" fill="#9a948a">lib/server/repo/*</text>
+
+    <rect x="250" y="500" width="400" height="56" rx="10" fill="none" stroke="#4a463f" stroke-width="1.5" stroke-dasharray="6 6"/>
+    <text class="sg" x="274" y="525" font-size="22" font-weight="600" fill="#9a948a">Внешние источники данных</text>
+    <text class="mono" x="274" y="545" font-size="17" fill="#6c6a64">db · redis · vault · keto</text>
+  </g>
+
+  <!-- Flow arrows -->
+  <g stroke="#4a463f" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M450 98v22M444 114l6 8 6-8"/>
+    <path d="M450 190v22M444 206l6 8 6-8"/>
+    <path d="M450 282v22M444 298l6 8 6-8"/>
+    <path d="M450 374v22M444 390l6 8 6-8"/>
+    <path d="M450 466v22M444 482l6 8 6-8"/>
+  </g>
+</svg>

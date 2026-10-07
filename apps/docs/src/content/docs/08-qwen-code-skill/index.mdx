@@ -1,11 +1,11 @@
 ---
 title: "Скилл FDA для AI-агентов"
-description: "Как передать правила FDA AI-агенту: установка скилла, сценарии использования, разбор правил на реальном коде и настройка под свой проект"
+description: "Как передать правила FDA AI-агенту: установка скилла, сценарии использования и настройка под свой проект"
 ---
 
-import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
+import { Aside, Steps } from "@astrojs/starlight/components";
 
-Разделы [01–06](/01-introduction/) объясняют архитектуру FDA человеку. Этот раздел делает обратное: он передаёт те же правила AI-агенту, чтобы агент не просто писал код, а писал код, который вписывается в вашу структуру доменов, слоёв и контрактов.
+Разделы [01–07](/01-introduction/) объясняют архитектуру FDA человеку. Этот раздел делает обратное: он передаёт те же правила AI-агенту, чтобы агент не просто писал код, а писал код, который вписывается в вашу структуру доменов, слоёв и контрактов.
 
 Скилл — это файл с инструкциями, который живёт рядом с проектом. После установки агент знает FDA так же, как знает синтаксис Svelte или Next.js: когда вы просите «создай домен корзины», он не изобретает структуру заново, а собирает её по правилам — repo внизу, UI наверху, между ними модель, RPC и контроллер.
 
@@ -15,7 +15,7 @@ import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
 
 Проблема не в агенте, а в том, что он не знает ваших правил. Их можно записать в файл с инструкциями проекта (`AGENTS.md`, `QWEN.md`, `CLAUDE.md` — имя зависит от инструмента), но такой файл загружается в контекст целиком при каждом запросе, поэтому его держат коротким. Правила FDA объёмные: пять слоёв, десяток контрактов файлов, запреты на импорты, маппинг на три фреймворка. Для этого и существует скилл:
 
-- **Создание доменов и подмодулей.** Агент собирает структуру файлов по контракту: от `+page.svelte` до `index.ts`.
+- **Создание доменов и субдоменов.** Агент собирает структуру файлов по контракту: от `+page.svelte` до `index.ts`.
 - **Ревью кода.** Агент прогоняет изменения по чеклисту FDA и указывает на нарушения — например, что UI импортирует `model.server.ts` напрямую.
 - **Рефакторинг и миграция.** Агент переносит существующий код в домен, сохраняя направление зависимостей.
 
@@ -32,7 +32,7 @@ import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
 ```yaml
 ---
 name: fda
-description: Fractal Domain Architecture assistant for scalable applications. Use when the user designs, creates, reviews, or refactors code that must follow FDA, or mentions domains, modules, submodules, layers, or file contracts.
+description: Fractal Domain Architecture assistant for scalable applications. Use when the user designs, creates, reviews, or refactors code that must follow FDA, or mentions domains, modules, subdomains, layers, or file contracts.
 ---
 ```
 
@@ -101,69 +101,11 @@ description: Fractal Domain Architecture assistant for scalable applications. Us
 
 Фреймворк в промпте можно не указывать: агент определит его по проекту — заглянет в `package.json` и конфиги (`svelte.config.js`, `next.config.ts`, `nuxt.config.ts`) — или спросит напрямую. Детали стека тоже уточняйте по желанию: строка «данные — Drizzle, состояние — Svelte 5 runes» сужает вариации, а без неё агент подберёт варианты по зависимостям проекта.
 
-Структура домена от фреймворка не зависит — меняются имена файлов и место папки по конвенции роутинга:
-
-<Tabs>
-  <TabItem label="SvelteKit">
-    ```text
-    src/routes/cart/
-    ├── +page.svelte         # страница: разметка, импортирует controller
-    ├── +page.server.ts      # server load: отдаёт корзину при заходе на страницу
-    ├── +server.ts           # HTTP-роут: экшены корзины
-    ├── rpc.ts               # функции для других доменов
-    ├── client.ts            # браузерные вызовы API модуля
-    ├── model.server.ts      # данные: CRUD через repo
-    ├── controller.svelte.ts # реактивное состояние (runes)
-    ├── types.ts             # CartItem, Cart
-    ├── constants.ts         # лимиты, ключи
-    ├── utils.ts             # расчёт скидок, форматирование
-    ├── index.ts             # публичный API домена
-    └── ui/                  # компоненты корзины
-        └── CartItemCard.svelte
-    ```
-  </TabItem>
-  <TabItem label="Next.js">
-    ```text
-    src/app/cart/
-    ├── page.tsx             # страница: разметка, импортирует controller
-    ├── page.server.tsx      # server load: отдаёт корзину при заходе на страницу
-    ├── actions.ts           # server actions: экшены корзины
-    ├── route.ts             # HTTP-эндпоинт корзины
-    ├── rpc.ts               # функции для других доменов
-    ├── client.ts            # браузерные вызовы API модуля
-    ├── model.ts             # данные: CRUD через repo
-    ├── controller.ts        # состояние и обработчики
-    ├── types.ts             # CartItem, Cart
-    ├── constants.ts         # лимиты, ключи
-    ├── utils.ts             # расчёт скидок, форматирование
-    ├── index.ts             # публичный API домена
-    └── ui/                  # компоненты корзины
-        └── CartItemCard.tsx
-    ```
-  </TabItem>
-  <TabItem label="Nuxt">
-    ```text
-    src/pages/cart/
-    ├── index.vue            # страница: разметка, импортирует controller
-    ├── setup.ts             # server load: отдаёт корзину при заходе на страницу
-    ├── server/api/cart.ts   # HTTP-эндпоинт корзины
-    ├── rpc.ts               # функции для других доменов
-    ├── client.ts            # браузерные вызовы API модуля
-    ├── model.ts             # данные: CRUD через repo
-    ├── composables.ts       # реактивное состояние
-    ├── types.ts             # CartItem, Cart
-    ├── constants.ts         # лимиты, ключи
-    ├── utils.ts             # расчёт скидок, форматирование
-    ├── index.ts             # публичный API домена
-    └── ui/                  # компоненты корзины
-        └── CartItemCard.vue
-    ```
-  </TabItem>
-</Tabs>
+Имена файлов в промпте указывать не нужно — агент сам разложит их по конвенции роутинга вашего фреймворка: как выглядит готовый домен и как имена соотносятся между SvelteKit, Next.js и Nuxt, показано в [структуре проекта](/03-project-structure/) и [маппинге на фреймворки](/02-core-concepts/#-framework-agnostic).
 
 Имена файлов — отправная точка, а не жёсткая константа. Если команда называет контроллер иначе или в вашем Next-проекте принято класть API в `app/api/`, поменяйте это в скилле: он лежит в вашем репозитории и адаптируется под конвенции проекта и ваш стек — [как именно, показано ниже](#️-настройка-под-свой-проект).
 
-Это не теоретические примеры: домен `cart` для SvelteKit целиком лежит в [рабочем примере репозитория](https://github.com/chord-ts/fda/tree/main/apps/example-sveltekit) — ниже разберём его код по слоям.
+Это не теоретические примеры: домен `cart` для SvelteKit целиком лежит в [рабочем примере репозитория](https://github.com/chord-ts/fda/tree/main/apps/example-sveltekit), а [раздел 05](/05-file-contracts/) разбирает его по файлам.
 
 ## 🧭 Сценарии использования
 
@@ -185,16 +127,16 @@ description: Fractal Domain Architecture assistant for scalable applications. Us
 
 </Aside>
 
-### Создание подмодуля
+### Создание субдомена
 
-Когда внутри домена вырастает самостоятельный кусок функциональности, он оформляется как подмодуль:
+Когда внутри домена вырастает самостоятельный кусок функциональности, он оформляется как субдомен:
 
 ```text
-В домене checkout выдели подмодуль _payment: расчёт способов оплаты.
+В домене checkout выдели субдомен _payment: расчёт способов оплаты.
 Он внутренний, отдельная страница не нужна.
 ```
 
-Префикс `_` решает судьбу подмодуля: `_payment` скрыт от роутинга и используется только внутри домена, а `items` без префикса получил бы собственный URL (`/cart/items`). Внутри обоих — та же структура, что и у домена: фрактальность в действии. Подробнее — в [разделе про домены и подмодули](/04-domains-submodules/).
+Префикс `_` решает судьбу субдомена: `_payment` скрыт от роутинга и используется только внутри домена, а `items` без префикса получил бы собственный URL (`/cart/items`). Внутри обоих — та же структура, что и у домена: фрактальность в действии. Подробнее — в [разделе про домены и субдомены](/04-domains-subdomains/).
 
 ### Кросс-доменное взаимодействие
 
@@ -205,7 +147,7 @@ description: Fractal Domain Architecture assistant for scalable applications. Us
 Свяжи их по FDA.
 ```
 
-Агент вызовет функцию из `products/rpc.ts` — публичного API домена — и не полезет в чужой `model.server.ts`. Как это выглядит в коде, показано [ниже](#-как-агент-исправляет-нарушения).
+Агент вызовет функцию из `products/rpc.ts` — публичного API домена — и не полезет в чужой `model.server.ts`. Как это выглядит в коде — в [разделе 06](/06-cross-domain-interactions/).
 
 ### Ревью существующего кода
 
@@ -227,221 +169,17 @@ description: Fractal Domain Architecture assistant for scalable applications. Us
 Логику данных — в model, состояние — в controller, разметку — в ui/.
 ```
 
-## 🔍 Что знает агент: свод правил
+## 🔍 Что внутри скилла
 
-Скилл кодирует всё, что агенту нужно знать о FDA. Здесь — карта этих знаний со ссылками на разделы, где правила объяснены для человека.
+Текст скилла — сжатый пересказ разделов 01–07: всё, что агенту нужно в момент генерации кода, и ничего лишнего. Сверять правила проще всего с «человеческими» разделами:
 
-### Слои и направление зависимостей
+- **Слои и направление импортов** — [основные концепции](/02-core-concepts/#-слои): кто кого импортирует и почему запрос идёт вниз, а данные вверх.
+- **Домены и субдомены** — [раздел 04](/04-domains-subdomains/): где проходит граница модуля и когда из него стоит вынести субдомен.
+- **Контракты файлов** — [раздел 05](/05-file-contracts/): роль и экспорты каждого файла; там же — разбор живого домена `cart` по файлам.
+- **Кросс-доменные связи** — [раздел 06](/06-cross-domain-interactions/): родитель и потомок, соседние домены, публичный вход, включая типичные нарушения и их исправления.
+- **Чеклист перед мержем** — [раздел 07](/07-faq-checklist/): тот же список, по которому агент проходит при ревью.
 
-```text
-UI (+page.svelte, ui/)
-  ↓
-Controller (controller.ts, stores.ts)
-  ↓
-RPC (rpc.ts, +server.ts)   Model (model.server.ts, schema.ts)
-  ↓                           ↓
-Repo (lib/server/repo/db, redis, vault, keto)
-  ↓
-Внешние источники данных
-```
-
-Каждый слой импортирует только то, что ниже. UI никогда не касается репозиториев и моделей; модель не знает про HTTP; репозиторий — единственное место, где живёт подключение к внешнему источнику. Данные при этом текут в обе стороны: запрос идёт вниз, результат — вверх. Полная таблица слоёв с запретами — в [основных концепциях](/02-core-concepts/).
-
-### Контракты файлов
-
-Агент знает роль каждого файла в домене: `schema.ts` — только таблицы ORM, `model.server.ts` — только операции с данными, `policy.ts` — только правила доступа, и так далее. Когда вы просите «добавь валидацию в types», агент не станет встраивать логику в типы — он предложит правильное место. Контракты разобраны в [разделе 05](/05-file-contracts/).
-
-### Обязательные и опциональные файлы
-
-Домен обязан иметь `+page.svelte`, `+page.server.ts`, `rpc.ts`, `model.server.ts`, контроллер и `index.ts`. Остальное — `types.ts`, `policy.ts`, `templates.ts`, `ui/` — добавляется, когда задача этого требует. Агент не создаёт файлы «на всякий случай» и не пропускает обязательные.
-
-### Маппинг на фреймворки
-
-| Концепция | SvelteKit | Next.js | Nuxt |
-|-----------|-----------|---------|------|
-| Страница | `+page.svelte` | `page.tsx` | `index.vue` |
-| Layout | `+layout.svelte` | `layout.tsx` | `layout.vue` |
-| Server load | `+page.server.ts` | `page.server.tsx` | `setup.ts` |
-| Server actions | `+page.server.ts` | `actions.ts` | `server/` |
-| API-роуты | `+server.ts` | `route.ts` | `/server/api/` |
-| RPC | `rpc.ts` | `rpc.ts` | `rpc.ts` |
-| Model | `model.server.ts` | `model.ts` | `model.ts` |
-
-RPC-слой и модель во всех фреймворках называются одинаково — это то, что делает FDA переносимым между ними.
-
-## 🧪 Сквозной пример: домен cart
-
-Посмотрим, как правила выглядят в живом коде. Разбор построен на SvelteKit — это реальный домен из [рабочего примера репозитория](https://github.com/chord-ts/fda/tree/main/apps/example-sveltekit), корзина с добавлением и удалением товаров. Если вы на Next.js или Nuxt, роли у файлов те же — отличаются только имена и место по конвенции роутинга (таблица — в разделе [«Маппинг на фреймворки»](#маппинг-на-фреймворки)).
-
-**1. Репозиторий — единственный, кто знает про источник данных.** В примере это заглушка поверх Drizzle; в продакшене здесь была бы реальная инициализация клиента:
-
-```ts
-// lib/server/repo/db.ts
-/** Коннектор к внешнему источнику данных. */
-export { db } from "./db.mock";
-```
-
-**2. Модель — операции с данными без HTTP и UI.** Каждый метод модели дёргает repo и возвращает готовый доменный объект:
-
-```ts
-// routes/cart/model.server.ts
-import { db } from "$lib/server/repo/db.mock";
-import type { Cart, CartItem } from "./types";
-
-export async function getCart(): Promise<Cart> {
-    const items = await db.table<CartItem & { id: string }>("cart_items").findMany();
-    return calculateCart(items);
-}
-
-export async function removeFromCart(itemId: string): Promise<Cart> {
-    const table = db.table<CartItem & { id: string }>("cart_items");
-    const filtered = (await table.findMany()).filter((i) => i.id !== itemId);
-    (table as any).rows = filtered;
-    return calculateCart(filtered);
-}
-
-function calculateCart(items: (CartItem & { id: string })[]): Cart {
-    const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const totalCount = items.reduce((sum, i) => sum + i.quantity, 0);
-    return { items, total, totalCount };
-}
-```
-
-Обратите внимание: в модели нет ни строчки про HTTP, ни строчки про интерфейс. Её можно вызывать из load-функции, из RPC или из фонового скрипта — результат один и тот же.
-
-**3. Серверный слой страницы — отдаёт данные при заходе на URL:**
-
-```ts
-// routes/cart/+page.server.ts
-import { getCart } from "./model.server";
-
-export const load = async () => {
-    const cart = await getCart();
-    return { cart };
-};
-```
-
-**4. HTTP-роут — принимает действия пользователя.** Парсит запрос, выбирает метод модели, возвращает JSON. Никакой бизнес-логики:
-
-```ts
-// routes/cart/+server.ts
-import { json } from "@sveltejs/kit";
-import * as model from "./model.server";
-
-export const POST = async ({ request }) => {
-    const body = await request.json();
-    switch (body.action) {
-        case "add":
-            return json(await model.addToCart(body.productId, body.quantity ?? 1));
-        case "remove":
-            return json(await model.removeFromCart(body.itemId));
-        default:
-            return json({ error: "Unknown action" }, { status: 400 });
-    }
-};
-```
-
-**5. Клиент — тонкая обёртка над fetch.** Живёт в домене, знает только адреса своего модуля:
-
-```ts
-// routes/cart/client.ts
-import type { Cart } from "./types";
-
-export async function removeFromCart(itemId: string): Promise<Cart> {
-    const res = await fetch("/cart", {
-        method: "POST",
-        body: JSON.stringify({ action: "remove", itemId }),
-    });
-    return res.json();
-}
-```
-
-**6. Контроллер — реактивное состояние.** Stores хранят корзину и дергают клиент:
-
-```ts
-// routes/cart/stores.ts
-import { writable, derived } from "svelte/store";
-import * as client from "./client";
-import type { Cart } from "./types";
-
-export const cart = writable<Cart>({ items: [], total: 0, totalCount: 0 });
-export const isEmpty = derived(cart, ($cart) => $cart.items.length === 0);
-
-export async function removeItem(itemId: string) {
-    const updated = await client.removeFromCart(itemId);
-    cart.set(updated);
-}
-```
-
-**7. Страница — только разметка.** Никаких fetch, никаких расчётов:
-
-```svelte
-<!-- routes/cart/+page.svelte -->
-<script lang="ts">
-    import { cart, removeItem, formatPrice } from "./stores";
-
-    let { data } = $props();
-
-    $effect(() => {
-        cart.set(data.cart);
-    });
-</script>
-
-{#each $cart.items as item (item.id)}
-    <div class="cart-item">
-        <div class="name">{item.name}</div>
-        <div class="subtotal">{formatPrice(item.price * item.quantity)}</div>
-        <button onclick={() => removeItem(item.id)}>×</button>
-    </div>
-{/each}
-```
-
-Соберём путь одного клика по кнопке «удалить»:
-
-```text
-+page.svelte → stores.removeItem → client.removeFromCart
-    → POST /cart (+server.ts) → model.removeFromCart → repo
-    → json обратно → stores.cart.set → разметка обновилась
-```
-
-Семь файлов, каждый делает одну вещь. Хотите поменять базу — правите repo. Хотите поменять API — правите `+server.ts` и `client.ts`. Хотите поменять поведение кнопки — правите stores. Ни одно изменение не расползается по всему домену — это и есть практическая выгода слоёв, о которой агент помнит при каждой генерации кода.
-
-## 🩹 Как агент исправляет нарушения
-
-Скилл работает и в обратную сторону: когда вы приносите код, который нарушает FDA, агент называет правило и предлагает фикс. Три типичных случая.
-
-### Нарушение 1: UI импортирует модель напрямую
-
-```svelte
-<!-- ❌ Так агент не напишет -->
-<script lang="ts">
-    import { getCart } from "./model.server"; // server-only код
-</script>
-```
-
-`model.server.ts` импортирует репозитории, а те — соединение с базой и, например, строки доступа. Такой импорт утянет серверный код в клиентский бандл — секреты окажутся в браузере. Агент разведёт пути: начальные данные — через `load` в `+page.server.ts`, изменения — через цепочку stores → client → `+server.ts` → model. Ровно так, как в примере `cart` выше.
-
-### Нарушение 2: домен лезет в чужую модель
-
-```ts
-// ❌ routes/orders/model.server.ts
-import { getProductById } from "$routes/products/model.server";
-```
-
-Границы доменов существуют, чтобы изменения в `products` не ломали `orders`. Агент перепишет импорт на публичный API:
-
-```ts
-// ✅ routes/orders/model.server.ts
-import { getProductById } from "../products/rpc";
-```
-
-### Нарушение 3: общий компонент лежит в домене
-
-```text
-routes/dashboard/ui/Button.svelte — нужен и cart, и auth
-```
-
-Компонент, который нужен одному домену, живёт в его `ui/`. Компонент, который нужен нескольким, переезжает в `lib/ui/` — инфраструктуру без бизнес-логики. Агент предложит именно переезд, а не копирование файла в каждый домен.
+Объяснений «почему» в скилле нет осознанно: он инструкция, а мотивация живёт в доках. Когда вы приносите код, который нарушает правила, агент называет правило и предлагает фикс — по разделам выше легко проверить его ответ.
 
 ## ⚙️ Настройка под свой проект
 
@@ -469,7 +207,7 @@ routes/dashboard/ui/Button.svelte — нужен и cart, и auth
 ## ⚠️ Ограничения
 
 - **Скилл — не линтер.** Он не проверяет код автоматически при сохранении файла. Ревью нужно просить явно: «проверь модуль X на соответствие FDA». Автоматическую проверку импортов на CI стоит делать отдельными правилами ESLint.
-- **Качество зависит от модели.** Чем способнее модель, тем точнее агент следует правилам. Финальную проверку перед мержем всё равно делает человек — по [чеклисту из раздела 06](/06-faq-checklist/).
+- **Качество зависит от модели.** Чем способнее модель, тем точнее агент следует правилам. Финальную проверку перед мержем всё равно делает человек — по [чеклисту из раздела 07](/07-faq-checklist/).
 - **Скилл знает правила, но не ваш проект.** Он не в курсе, какие домены у вас уже есть, — агент читает структуру репозитория сам и сочетает её с правилами скилла. Если проект не следует FDA, явно укажите, какие части трогать.
 - **Правила не самообновляются.** Страница, которую вы читаете, — источник свежей версии. Периодически сверяйте текст в своём `SKILL.md` с блоком ниже.
 
@@ -480,23 +218,23 @@ routes/dashboard/ui/Button.svelte — нужен и cart, и auth
 ````markdown
 ---
 name: fda
-description: Fractal Domain Architecture assistant for scalable applications. Use when the user designs, creates, reviews, or refactors code that must follow FDA, or mentions domains, modules, submodules, layers, or file contracts.
+description: Fractal Domain Architecture assistant for scalable applications. Use when the user designs, creates, reviews, or refactors code that must follow FDA, or mentions domains, modules, subdomains, layers, or file contracts.
 ---
 
 # FDA (Fractal Domain Architecture)
 
 You are an expert in Fractal Domain Architecture (FDA). You help developers design, create, and validate FDA-compliant code.
 
-Reference: https://fda-docs.vercel.app/
+Reference: https://fda-docs.com/
 
 ## Core Principles
 
-1. **Fractality.** The same structure repeats at every level: component → submodule → domain → application.
+1. **Fractality.** The same structure repeats at every level: component → subdomain → domain → application.
 2. **Layer separation.** Strict layer order: repo → model → RPC → controller → UI.
 3. **Explicit contracts.** Each file has one role and one set of exports.
 4. **Framework-agnostic.** The same rules apply to SvelteKit, Next.js, and Nuxt.
 
-A domain is a top-level module inside `routes/` or `pages/`. A module is any folder that follows the structure below. A submodule is a module inside a module.
+A domain is a top-level module inside `routes/` or `pages/`. A module is any folder that follows the structure below. A subdomain is a module inside a module.
 
 ## Layers
 
@@ -541,10 +279,10 @@ Optional files: `+layout.svelte` and `+layout.server.ts`, `types.ts`, `constants
 
 If `+layout.server.ts` exists, `+layout.svelte` must exist too.
 
-## Submodules
+## Subdomains
 
-- `module/_sub/` — internal submodule. The prefix `_` hides it from routing.
-- `module/sub/` — public submodule. It has its own route.
+- `module/_sub/` — internal subdomain. The prefix `_` hides it from routing.
+- `module/sub/` — public subdomain. It has its own route.
 
 Both follow the same structure as modules.
 
@@ -672,7 +410,7 @@ When you review code, check each item:
 
 ## 🔗 Что дальше
 
-→ [FAQ и чеклист](/06-faq-checklist/) — ручная проверка модуля перед мержем
+→ [FAQ и чеклист](/07-faq-checklist/) — ручная проверка модуля перед мержем
 
 → [Контракты файлов](/05-file-contracts/) — полное описание роли каждого файла
 
