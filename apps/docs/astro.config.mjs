@@ -12,11 +12,45 @@ export default defineConfig({
   },
   integrations: [
     starlight({
-      title: "FDA Docs",
+      title: "FDA",
       logo: {
-        dark: "./src/assets/logo.png",
-        light: "./src/assets/logo.png",
+        dark: "./src/assets/fda-mark-white.svg",
+        light: "./src/assets/fda-mark.svg",
       },
+      head: [
+        {
+          tag: "link",
+          attrs: { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+        },
+        {
+          tag: "link",
+          attrs: { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+        },
+        {
+          tag: "link",
+          attrs: { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+        },
+        {
+          tag: "link",
+          attrs: { rel: "manifest", href: "/site.webmanifest" },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "theme-color",
+            content: "#f5efe3",
+            media: "(prefers-color-scheme: light)",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "theme-color",
+            content: "#171614",
+            media: "(prefers-color-scheme: dark)",
+          },
+        },
+      ],
       social: [
         {
           icon: "github",
@@ -26,7 +60,7 @@ export default defineConfig({
       ],
       sidebar: [
         {
-          label: "📚 Документация FDA",
+          label: "Документация FDA",
           items: [
             {
               label: "Введение",
@@ -58,34 +92,43 @@ export default defineConfig({
             },
           ],
         },
-        {
-          label: "Reference",
-          autogenerate: {
-            directory: "reference",
-          },
-        },
       ],
       customCss: [
         "@fontsource-variable/space-grotesk/index.css",
         "@fontsource/space-mono/400.css",
         "@fontsource/space-mono/700.css",
-        "@fontsource-variable/unbounded/index.css",
-        "@fontsource/geist-sans/index.css",
+        "./src/styles/tokens.css",
         "./src/styles/modern.css",
         "./src/styles/global.css",
       ],
+      expressiveCode: {
+        themes: ["github-dark"],
+        styleOverrides: {
+          borderRadius: "12px",
+          borderWidth: "1px",
+          borderColor: "#33302b",
+          codeBackground: "#181715",
+          editorBackground: "#181715",
+          editorTabBackground: "#1f1e1b",
+          editorActiveTabBackground: "#181715",
+          editorTabBorderColor: "#33302b",
+          tooltipBackground: "#252320",
+          tooltipBorder: "#33302b",
+          frames: {
+            shadows: "none",
+          },
+        },
+      },
       lastUpdated: true,
       pagination: true,
-      components: {
-        // PageFrame: "./src/components/PageFrame.astro",
-      },
+      components: {},
       plugins: [
         ion({
           icons: {
             iconDir: "./src/icons",
           },
           footer: {
-            text: "©️ 2026 FDA Documentation",
+            text: "© 2026 FDA Documentation",
             links: [
               {
                 text: "GitHub",
@@ -93,6 +136,7 @@ export default defineConfig({
               },
             ],
           },
+          useCustomECTheme: false,
         }),
       ],
     }),

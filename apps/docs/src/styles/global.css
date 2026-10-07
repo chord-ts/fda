@@ -1,178 +1,145 @@
-:root {
-  /* Font */
-  --sl-font: "Space Grotesk Variable", sans-serif;
-  --sl-font-system-mono: "Space Mono", monospace;
-}
+/*
+  FDA landing components: section grids, cards, badges, diagrams.
+  Elevation comes from color blocks on the cream canvas, not from shadows.
+*/
+@layer ion {
+  .docs-grid,
+  .examples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0 2.5rem;
+  }
 
-/* Change font & remove ligatures for all code & the file tree */
-.expressive-code,
-pre,
-.expressive-code pre > code,
-code,
-starlight-file-tree {
-  font-family: "Space Mono", monospace !important;
-  font-variant-ligatures: none !important;
-}
+  .doc-card,
+  .example-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem 1.25rem 1.375rem;
+    background: var(--fda-surface-card);
+    border-radius: var(--fda-radius-lg);
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
 
-/* FDA Styles */
-.docs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin: 2rem 0;
-}
+  .sl-markdown-content a.doc-card,
+  .sl-markdown-content a.example-card {
+    color: inherit;
+    text-decoration: none;
+  }
 
-.doc-card {
-  display: block;
-  padding: 1.5rem;
-  border: 1px solid var(--sl-color-border);
-  border-radius: var(--sl-radius-medium);
-  transition: transform 0.2s, box-shadow 0.2s;
-  text-decoration: none;
-  color: inherit;
-}
+  .doc-card:hover,
+  .example-card:hover {
+    background: var(--fda-surface-strong);
+    transform: translateY(-2px);
+  }
 
-.doc-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+  .doc-card h3,
+  .example-card h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--fda-ink);
+  }
 
-.doc-card h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1.1rem;
-}
+  .doc-card p,
+  .example-card p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--fda-muted);
+  }
 
-.doc-card p {
-  margin: 0;
-  color: var(--sl-color-text-secondary);
-  font-size: 0.9rem;
-}
+  .example-card .badge {
+    align-self: flex-start;
+    margin-top: auto;
+  }
 
-.examples-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin: 2rem 0;
-}
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    background: var(--fda-surface-strong);
+    color: var(--fda-ink);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
 
-.example-card {
-  display: block;
-  padding: 1.5rem;
-  border: 1px solid var(--sl-color-border);
-  border-radius: var(--sl-radius-medium);
-  transition: transform 0.2s, box-shadow 0.2s;
-  text-decoration: none;
-  color: inherit;
-}
+  .badge[data-color="green"] {
+    background: var(--sl-color-green-low);
+    color: var(--sl-color-green-high);
+  }
 
-.example-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+  .badge[data-color="yellow"] {
+    background: var(--sl-color-orange-low);
+    color: var(--sl-color-orange-high);
+  }
 
-.example-card h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1.1rem;
-}
+  .badge[data-color="red"] {
+    background: var(--sl-color-red-low);
+    color: var(--sl-color-red-high);
+  }
 
-.example-card p {
-  margin: 0;
-  color: var(--sl-color-text-secondary);
-  font-size: 0.9rem;
-}
+  /* Mermaid diagrams */
+  .mermaid {
+    text-align: center;
+    margin: 2rem 0;
+  }
 
-.badge {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--sl-radius-small);
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-top: 0.5rem;
-}
+  .mermaid svg {
+    max-width: 100%;
+    height: auto;
+  }
 
-.badge[data-color="green"] {
-  background: #dcfce7;
-  color: #166534;
-}
+  /* Legacy callouts (content uses Starlight asides; kept for older pages) */
+  .callout {
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--fda-hairline);
+    border-inline-start: 3px solid var(--sl-color-blue);
+    border-radius: var(--fda-radius-lg);
+    background: var(--fda-surface-soft);
+    margin: 1.5rem 0;
+  }
 
-.badge[data-color="yellow"] {
-  background: #fef08a;
-  color: #854d0e;
-}
+  .callout-info {
+    border-inline-start-color: var(--sl-color-blue);
+  }
 
-.badge[data-color="red"] {
-  background: #fee2e2;
-  color: #b91c1c;
-}
+  .callout-warning {
+    border-inline-start-color: var(--sl-color-orange);
+  }
 
-/* Mermaid Diagram Styles */
-.mermaid {
-  text-align: center;
-  margin: 2rem 0;
-}
+  .callout-error {
+    border-inline-start-color: var(--sl-color-red);
+  }
 
-.mermaid svg {
-  max-width: 100%;
-  height: auto;
-}
+  .callout-success {
+    border-inline-start-color: var(--sl-color-green);
+  }
 
-/* Table Styles */
-table {
-  width: 100%;
-  margin: 1.5rem 0;
-  border-collapse: collapse;
-}
+  /* Starlight cards on the landing page */
+  .card,
+  .sl-link-card {
+    background: var(--fda-surface-card) !important;
+    border: none !important;
+    border-radius: var(--fda-radius-lg) !important;
+    padding: 1.5rem !important;
+  }
 
-th, td {
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--sl-color-border);
-  text-align: left;
-}
+  .card:hover,
+  .sl-link-card:hover {
+    background: var(--fda-surface-strong) !important;
+  }
 
-th {
-  background: var(--sl-color-bg-alt);
-  font-weight: 600;
-}
+  .card .title {
+    color: var(--fda-ink);
+  }
 
-/* Code Block Styles */
-code {
-  background: var(--sl-color-bg-inline-code);
-  padding: 0.2em 0.4em;
-  border-radius: var(--sl-radius-small);
-  font-size: 0.9em;
-}
-
-pre {
-  background: var(--sl-color-bg(code));
-  border-radius: var(--sl-radius-medium);
-  padding: 1rem;
-  overflow-x: auto;
-}
-
-/* Callout Styles */
-.callout {
-  padding: 1rem;
-  border-left: 4px solid;
-  border-radius: var(--sl-radius-small);
-  margin: 1rem 0;
-}
-
-.callout-info {
-  background: #f0f9ff;
-  border-color: #0ea5e9;
-}
-
-.callout-warning {
-  background: #fffbeb;
-  border-color: #d97706;
-}
-
-.callout-error {
-  background: #fef2f2;
-  border-color: #ef4444;
-}
-
-.callout-success {
-  background: #f0fdf4;
-  border-color: #22c55e;
+  .card p {
+    color: var(--fda-body);
+  }
 }

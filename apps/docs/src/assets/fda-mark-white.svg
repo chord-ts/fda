@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="fda-mark-white-title">
+  <title id="fda-mark-white-title">FDA — Fractal Domain Architecture</title>
+  <defs>
+    <linearGradient id="fdaAccent" gradientUnits="userSpaceOnUse" x1="140" y1="140" x2="248" y2="248">
+      <stop offset="0" stop-color="#4FB3A9"/>
+      <stop offset="1" stop-color="#93e6d6"/>
+    </linearGradient>
+  </defs>
+  <g fill="#F7F4EE">
+    <rect x="8" y="8" width="108" height="108"/>
+    <rect x="140" y="8" width="108" height="108"/>
+    <rect x="8" y="140" width="108" height="108"/>
+  </g>
+  <g fill="url(#fdaAccent)">
+    <rect x="140" y="140" width="48" height="48"/>
+    <rect x="200" y="140" width="48" height="48"/>
+    <rect x="140" y="200" width="48" height="48"/>
+    <rect x="200" y="200" width="48" height="48"/>
+  </g>
+</svg>

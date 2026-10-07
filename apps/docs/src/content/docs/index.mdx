@@ -1,12 +1,13 @@
 ---
-title: "FDA (Fractal Domain Architecture)"
+title: "Fractal Domain Architecture"
 description: "Документация по архитектуре фрактальных доменов для масштабируемых приложений"
 tableOfContents: false
 hero:
   tagline: Код вокруг бизнеса, а не вокруг типов файлов
   image:
-    dark: ../../assets/logo.png
-    light: ../../assets/logo.png
+    dark: ../../assets/fda-lockup-white.svg
+    light: ../../assets/fda-lockup.svg
+    alt: "Знак FDA: квадрат домена, разделённый на четыре таких же квадрата"
   actions:
     - text: Начать изучение
       link: /01-introduction/
@@ -15,20 +16,21 @@ hero:
     - text: GitHub репозиторий
       link: https://github.com/chord-ts/fda
       icon: external
+      variant: secondary
 ---
 
 import { Card, CardGrid } from "@astrojs/starlight/components";
 
-FDA организует приложение вокруг бизнес-доменов: `cart`, `auth`, `dashboard`. Внутри каждого домена — одинаковый набор слоёв и файлов с предсказуемыми ролями. Структура повторяется от компонента до всего приложения, поэтому проект растёт, не превращаясь в кашу.
+FDA организует код приложения вокруг бизнес-доменов. Внутри каждого домена — одинаковый набор слоёв и файлов с предсказуемыми ролями. Структура самоподобна от компонентов до уровня всего приложения
 
-## Основные принципы
+## Принципы
 
-<CardGrid stagger>
+<CardGrid>
   <Card title="Фрактальность" icon="left-caret">
     Одинаковая структура на всех уровнях: компонент → подмодуль → домен. Открыв любой модуль, вы уже знаете, где что лежит
   </Card>
-  <Card title="Разделение на слои" icon="down-caret">
-    repo → model → RPC → контроллер → UI. Импорты смотрят только вниз — серверный код не утекает в браузер
+  <Card title="Инверсия зависимостей" icon="down-caret">
+    Repo → Model → RPC → Controller → UI. Слои имеют низкую связность и линейную зависимость в одном направлении
   </Card>
   <Card title="Явные контракты" icon="approve-check-circle">
     Каждый файл — одна роль и один набор экспортов. Нарушение бросается в глаза на ревью
@@ -38,7 +40,7 @@ FDA организует приложение вокруг бизнес-доме
   </Card>
 </CardGrid>
 
-## 📚 Документация
+## Документация
 
 <div class="docs-grid">
   <a href="/01-introduction/" class="doc-card">
@@ -71,30 +73,28 @@ FDA организует приложение вокруг бизнес-доме
   </a>
 </div>
 
-## 🧪 Примеры
+## Примеры
 
 Сквозной пример документации — домен `cart`: корзина товаров с полным набором слоёв. Его код используется во всех разделах.
 
 <div class="examples-grid">
-  <a href="https://github.com/chord-ts/fda/tree/main/apps/example-sveltekit" class="example-card" target="_blank">
-    <h3><img src="https://img.shields.io/badge/SvelteKit-FF3E00?logo=svelte&logoColor=white" alt="SvelteKit" style="height:20px;margin-bottom:0.3rem" /> Cart</h3>
-    <p>Корзина товаров — SvelteKit пример</p>
-    <span class="badge" data-color="green">SvelteKit</span>
+  <a href="https://github.com/chord-ts/fda/tree/main/apps/example-sveltekit" class="example-card" target="_blank" rel="noreferrer">
+    <h3>SvelteKit · Cart</h3>
+    <p>Корзина товаров с полным набором слоёв на SvelteKit</p>
+    <span class="badge" data-color="green">Готово</span>
   </a>
-  <a href="https://github.com/chord-ts/fda/tree/main/apps/example-next" class="example-card" target="_blank">
-    <h3><img src="https://img.shields.io/badge/Next.js-000?logo=nextdotjs&logoColor=white" alt="Next.js" style="height:20px;margin-bottom:0.3rem" /></h3>
-    <p>Скоро</p>
+  <a href="https://github.com/chord-ts/fda/tree/main/apps/example-next" class="example-card" target="_blank" rel="noreferrer">
+    <h3>Next.js · Cart</h3>
+    <p>Тот же домен на App Router</p>
     <span class="badge" data-color="yellow">Скоро</span>
   </a>
-  <a href="https://github.com/chord-ts/fda/tree/main/apps/example-nuxt" class="example-card" target="_blank">
-    <h3><img src="https://img.shields.io/badge/Nuxt-00DC82?logo=nuxtdotjs&logoColor=white" alt="Nuxt" style="height:20px;margin-bottom:0.3rem" /></h3>
-    <p>Скоро</p>
+  <a href="https://github.com/chord-ts/fda/tree/main/apps/example-nuxt" class="example-card" target="_blank" rel="noreferrer">
+    <h3>Nuxt · Cart</h3>
+    <p>Тот же домен на Nuxt 3</p>
     <span class="badge" data-color="yellow">Скоро</span>
   </a>
 </div>
 
-## 🤖 Работаете с AI-агентами?
+## Скилл для AI-агентов
 
-Qwen Code и Claude Code могут писать FDA-код сами: устанавливаемый скилл учит агента собирать домены по контракту, ловить нарушения слоёв и адаптировать правила под ваш стек.
-
-→ [Скилл FDA для AI-агентов](/07-qwen-code-skill/)
+Qwen Code и Claude Code могут писать FDA-код сами: устанавливаемый скилл учит агента собирать домены по контракту, ловить нарушения слоёв и адаптировать правила под ваш стек. Подробнее — в разделе [Скилл FDA для AI-агентов](/07-qwen-code-skill/).

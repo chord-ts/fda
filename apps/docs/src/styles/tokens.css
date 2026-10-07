@@ -1,0 +1,123 @@
+/*
+  FDA design tokens.
+  Warm cream canvas + petrol accent, Anthropic-style color-block elevation.
+  Dark theme is the warm graphite family; light theme is the default.
+*/
+@layer ion {
+  :root {
+    /* Brand surfaces (dark theme) */
+    --fda-canvas: #171614;
+    --fda-surface-soft: #1f1e1b;
+    --fda-surface-card: #252320;
+    --fda-surface-strong: #2e2b27;
+    --fda-ink: #f7f4ee;
+    --fda-body: #c9c4b9;
+    --fda-muted: #9a948a;
+    --fda-hairline: #33302b;
+    --fda-code-bg: #181715;
+    --fda-accent: #4fb3a9;
+    --fda-accent-hover: #6cc7bd;
+    --fda-accent-tint: #14332f;
+    --fda-accent-on: #10201f;
+
+    /* Starlight grayscale (dark theme) */
+    --sl-color-white: #f7f4ee;
+    --sl-color-gray-1: #ede9e1;
+    --sl-color-gray-2: #c9c4b9;
+    --sl-color-gray-3: #9a948a;
+    --sl-color-gray-4: #4a463f;
+    --sl-color-gray-5: #2c2a26;
+    --sl-color-gray-6: #1f1e1b;
+    --sl-color-gray-7: #23211d;
+    --sl-color-black: #171614;
+
+    --sl-color-accent-low: #14332f;
+    --sl-color-accent: #3fa39a;
+    --sl-color-accent-high: #7fd1c7;
+
+    /* Aside tints (dark theme) */
+    --sl-color-green-low: #1c2a1c;
+    --sl-color-green: #7fb57a;
+    --sl-color-green-high: #a9d6a3;
+    --sl-color-red-low: #33201c;
+    --sl-color-red: #d98a7a;
+    --sl-color-red-high: #eeb3a6;
+    --sl-color-orange-low: #33281a;
+    --sl-color-orange: #d9a866;
+    --sl-color-orange-high: #ecc491;
+    --sl-color-blue-low: #14332f;
+    --sl-color-blue: #4fb3a9;
+    --sl-color-blue-high: #7fd1c7;
+    --sl-color-purple-low: #272031;
+    --sl-color-purple: #a68fc4;
+    --sl-color-purple-high: #c4b3da;
+
+    --sl-border: #33302b;
+    --pagefind-ui-border: #33302b;
+    --pagefind-ui-primary: var(--sl-color-accent);
+
+    /* Geometry */
+    --fda-radius-sm: 6px;
+    --fda-radius-md: 8px;
+    --fda-radius-lg: 12px;
+    --fda-radius-xl: 16px;
+    --sl-shadow-sm: 0 1px 3px rgba(20, 20, 19, 0.08);
+
+    /* Reading measure */
+    --sl-content-width: 46rem;
+    --sl-content-pad-x: 1.5rem;
+  }
+
+  :root[data-theme="light"] {
+    /* Brand surfaces (light theme, old-paper canvas) */
+    --fda-canvas: #f5efe3;
+    --fda-surface-soft: #efe8da;
+    --fda-surface-card: #e8e0cf;
+    --fda-surface-strong: #dfd6c2;
+    --fda-ink: #141413;
+    --fda-body: #3d3d3a;
+    --fda-muted: #6c6a64;
+    --fda-hairline: #e0d8c6;
+    --fda-code-bg: #181715;
+    --fda-accent: #0f5257;
+    --fda-accent-hover: #0b3e42;
+    --fda-accent-tint: #e2ebe8;
+    --fda-accent-on: #f5efe3;
+
+    /* Starlight grayscale (light theme) */
+    --sl-color-white: #141413;
+    --sl-color-gray-1: #1b1a18;
+    --sl-color-gray-2: #3d3d3a;
+    --sl-color-gray-3: #6c6a64;
+    --sl-color-gray-4: #8e8b82;
+    --sl-color-gray-5: #e0d8c6;
+    --sl-color-gray-6: #ede6d8;
+    --sl-color-gray-7: #f1ebe0;
+    --sl-color-black: #f5efe3;
+
+    --sl-color-accent-low: #e4edeb;
+    --sl-color-accent: #0f5257;
+    --sl-color-accent-high: #0a3d41;
+
+    /* Aside tints (light theme) */
+    --sl-color-green-low: #e8efe5;
+    --sl-color-green: #4a7c46;
+    --sl-color-green-high: #2f5a2c;
+    --sl-color-red-low: #f6e8e4;
+    --sl-color-red: #a04a3c;
+    --sl-color-red-high: #7c3327;
+    --sl-color-orange-low: #f6ecdd;
+    --sl-color-orange: #8f6210;
+    --sl-color-orange-high: #6b4a0c;
+    --sl-color-blue-low: #e4edeb;
+    --sl-color-blue: #0f5257;
+    --sl-color-blue-high: #0a3d41;
+    --sl-color-purple-low: #ece7f0;
+    --sl-color-purple: #5f4a78;
+    --sl-color-purple-high: #46365c;
+
+    --sl-border: #e6dfd8;
+    --pagefind-ui-border: #e6dfd8;
+    --pagefind-ui-primary: var(--sl-color-accent);
+  }
+}

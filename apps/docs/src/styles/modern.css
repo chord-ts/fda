@@ -1,88 +1,391 @@
+/*
+  FDA typography and site chrome.
+  Space Grotesk carries every level of text; Space Mono only inside code.
+  Tracking tightens as type grows, leading loosens as type shrinks.
+*/
 @layer ion {
   :root {
-    /* Font families */
-    --font-heading: "Unbounded Variable", sans-serif;
-    --font-body: "Geist Sans Variable", sans-serif;
+    --sl-font: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    --sl-font-system-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 
-  /* ===== TYPOGRAPHY ===== */
+  body {
+    font-family: var(--sl-font);
+    background: var(--fda-canvas);
+    color: var(--fda-body);
+    -webkit-font-smoothing: antialiased;
+  }
 
-  /* Headings use Unbounded */
-  h1, h2, h3, h4, h5, h6,
+  /* ===== Headings ===== */
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
   .sl-markdown-content h1,
   .sl-markdown-content h2,
   .sl-markdown-content h3,
   .sl-markdown-content h4,
   .sl-markdown-content h5,
-  .sl-markdown-content h6,
+  .sl-markdown-content h6 {
+    font-family: var(--sl-font);
+    color: var(--fda-ink);
+    font-weight: 600;
+  }
+
+  h1,
+  .sl-markdown-content h1,
   .hero h1 span {
-    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4.2vw, 2.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.022em;
     font-weight: 700;
-    color: var(--sl-color-white);
+  }
+
+  h2,
+  .sl-markdown-content h2 {
+    font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+    line-height: 1.2;
+    letter-spacing: -0.016em;
+    margin-top: 2.5rem;
+  }
+
+  h3,
+  .sl-markdown-content h3 {
+    font-size: 1.25rem;
+    line-height: 1.3;
     letter-spacing: -0.01em;
+    margin-top: 2rem;
   }
 
-  h1, .sl-markdown-content h1 {
-    font-size: clamp(2rem, 4vw, 2.75rem);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-  }
-
-  h2, .sl-markdown-content h2 {
-    font-size: clamp(1.375rem, 2.5vw, 1.75rem);
-  }
-
-  h3, .sl-markdown-content h3 {
-    font-size: clamp(1.125rem, 2vw, 1.375rem);
-  }
-
-  h4, h5, h6 {
-    font-size: 1.125rem;
-  }
-
-  /* Body text uses Geist Sans */
-  body,
-  .sl-markdown-content p,
-  .sl-markdown-content li,
-  .sl-markdown-content td,
-  .sl-markdown-content th,
-  .doc-card p,
-  .example-card p,
-  .tagline,
-  .pagination-links a span,
-  .meta {
-    font-family: var(--font-body);
-    font-weight: 400;
-  }
-
-  .sl-markdown-content p {
+  h4,
+  h5,
+  h6 {
     font-size: 1.0625rem;
-    line-height: 1.75;
+    line-height: 1.4;
+    letter-spacing: -0.006em;
+  }
+
+  /* ===== Body copy ===== */
+
+  .sl-markdown-content {
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+
+  .sl-markdown-content p,
+  .sl-markdown-content li {
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fda-body);
+  }
+
+  /* Comfortable reading measure on full-bleed layouts */
+  .sl-markdown-content > p,
+  .sl-markdown-content > ul,
+  .sl-markdown-content > ol,
+  .sl-markdown-content > blockquote {
+    max-width: 46rem;
   }
 
   .sl-markdown-content strong {
+    color: var(--fda-ink);
     font-weight: 600;
   }
 
-  /* Hero heading - white, no gradient */
-  .hero h1 span {
-    background: none;
-    -webkit-text-fill-color: unset;
-    color: var(--sl-color-white);
+  .sl-markdown-content a {
+    color: var(--fda-accent);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--fda-accent) 35%, transparent);
+    text-underline-offset: 3px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
   }
 
-  /* ===== GRADIENT CTA BUTTON ===== */
+  .sl-markdown-content a:hover {
+    color: var(--fda-accent-hover) !important;
+    text-decoration-color: currentColor;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--fda-accent);
+    outline-offset: 2px;
+  }
+
+  /* ===== Header ===== */
+
+  header.header {
+    background: var(--fda-canvas);
+    border-bottom: 1px solid var(--fda-hairline);
+  }
+
+  .site-title {
+    font-family: var(--sl-font);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    gap: 0.625rem;
+  }
+
+  .site-title > span {
+    color: var(--fda-ink);
+    font-size: 1.125rem;
+    line-height: 1;
+    letter-spacing: inherit;
+  }
+
+  .social-icons a {
+    color: var(--fda-muted);
+  }
+
+  .social-icons a:hover {
+    color: var(--fda-ink);
+  }
+
+  /* ===== Sidebar ===== */
+
+  #starlight__sidebar {
+    background: var(--fda-surface-soft);
+    border-right: 1px solid var(--fda-hairline);
+  }
+
+  .sidebar-content a {
+    color: var(--fda-muted);
+  }
+
+  .sidebar-content a:hover,
+  .sidebar-content a:focus {
+    color: var(--fda-ink);
+  }
+
+  .sidebar-content [aria-current="page"],
+  .sidebar-content [aria-current="page"]:hover,
+  .sidebar-content [aria-current="page"]:focus {
+    background: var(--fda-surface-card);
+    color: var(--fda-ink) !important;
+    font-weight: 500;
+  }
+
+  .sidebar-content [aria-current="page"] span {
+    color: var(--fda-ink) !important;
+  }
+
+  .sidebar-content [aria-current="page"] svg {
+    filter: none;
+  }
+
+  .sidebar-content .group-label span {
+    font-family: var(--sl-font) !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.09em;
+    color: var(--fda-muted);
+  }
+
+  /* ===== Table of contents ===== */
+
+  #starlight__on-this-page {
+    font-family: var(--sl-font);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.09em;
+    color: var(--fda-muted);
+  }
+
+  starlight-toc a {
+    color: var(--fda-muted);
+  }
+
+  starlight-toc a:hover {
+    color: var(--fda-ink);
+  }
+
+  starlight-toc a[aria-current="true"],
+  starlight-toc a[aria-current="true"]:hover {
+    color: var(--fda-ink);
+    font-weight: 500;
+  }
+
+  /* ===== Hero ===== */
+
+  .hero {
+    border-bottom: 1px solid var(--fda-hairline);
+    padding: clamp(2.5rem, 6vw, 5rem) clamp(1.5rem, 4vw, 3rem);
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+
+  .tagline {
+    color: var(--fda-muted);
+    font-size: clamp(1.0625rem, 2vw, 1.25rem);
+    line-height: 1.55;
+    letter-spacing: -0.006em;
+  }
+
+  /* ===== Buttons ===== */
+
+  .action {
+    border-radius: var(--fda-radius-md) !important;
+    padding: 0.75rem 1.25rem !important;
+    font-size: 1rem !important;
+    line-height: 1.25 !important;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  }
 
   .action.primary {
-    background: linear-gradient(135deg, #086efd, #3b82f6, #8b5cf6) !important;
-    color: #fff !important;
-    border: none;
-    font-weight: 600;
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    background: var(--fda-accent) !important;
+    color: var(--fda-accent-on) !important;
+    border: none !important;
+    font-weight: 500;
   }
 
   .action.primary:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+    background: var(--fda-accent-hover) !important;
+  }
+
+  .action.primary:active {
+    transform: scale(0.98);
+  }
+
+  .action:not(.primary) {
+    background: transparent !important;
+    color: var(--fda-ink) !important;
+    border: 1px solid var(--fda-hairline) !important;
+    font-weight: 500;
+  }
+
+  .action:not(.primary):hover {
+    background: var(--fda-surface-card) !important;
+    border-color: var(--fda-muted) !important;
+  }
+
+  /* ===== Footer ===== */
+
+  .page-footer {
+    border-top: 1px solid var(--fda-hairline);
+    color: var(--fda-muted);
+  }
+
+  .page-footer a {
+    color: var(--fda-muted);
+  }
+
+  .page-footer a:hover {
+    color: var(--fda-ink);
+  }
+
+  /* ===== Code ===== */
+
+  .sl-markdown-content :not(pre) > code {
+    background: var(--fda-surface-card);
+    color: var(--fda-ink);
+    border-radius: var(--fda-radius-sm);
+    padding: 0.125em 0.4em;
+    font-size: 0.875em;
+    font-family: var(--sl-font-system-mono);
+    font-variant-ligatures: none;
+  }
+
+  .expressive-code .frame,
+  .expressive-code .frame pre {
+    background: var(--fda-code-bg) !important;
+  }
+
+  .expressive-code .header {
+    background: #1f1e1b !important;
+  }
+
+  .expressive-code .frame {
+    border: 1px solid var(--fda-hairline);
+  }
+
+  .expressive-code code,
+  pre,
+  code {
+    font-family: var(--sl-font-system-mono);
+    font-variant-ligatures: none;
+  }
+
+  .expressive-code .copy button {
+    background: var(--fda-surface-card);
+  }
+
+  starlight-file-tree.not-content {
+    background: var(--fda-surface-soft);
+    border: 1px solid var(--fda-hairline);
+    border-radius: var(--fda-radius-lg);
+  }
+
+  /* Diagrams and screenshots read as framed product surfaces on the cream canvas */
+  .sl-markdown-content img {
+    border-radius: var(--fda-radius-lg);
+    border: 1px solid var(--fda-hairline);
+  }
+
+  /* ===== Tables ===== */
+
+  .sl-markdown-content table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.9375rem;
+  }
+
+  .sl-markdown-content th,
+  .sl-markdown-content td {
+    border: none;
+    border-bottom: 1px solid var(--fda-hairline);
+    padding: 0.625rem 0.875rem;
+    text-align: left;
+  }
+
+  .sl-markdown-content th {
+    color: var(--fda-ink);
+    font-weight: 600;
+    border-bottom-color: var(--fda-muted);
+    background: transparent;
+  }
+
+  .sl-markdown-content tbody tr:hover {
+    background: var(--fda-surface-soft);
+  }
+
+  /* ===== Asides ===== */
+
+  .starlight-aside {
+    border-radius: var(--fda-radius-lg);
+    border: 1px solid var(--fda-hairline);
+    border-inline-start: 3px solid var(--sl-color-blue);
+  }
+
+  .starlight-aside--tip {
+    border-inline-start-color: var(--sl-color-green);
+  }
+
+  .starlight-aside--caution {
+    border-inline-start-color: var(--sl-color-orange);
+  }
+
+  .starlight-aside--danger {
+    border-inline-start-color: var(--sl-color-red);
+  }
+
+  /* ===== Search dialog ===== */
+
+  dialog {
+    background: var(--fda-canvas) !important;
+    border: 1px solid var(--fda-hairline);
+    border-radius: var(--fda-radius-lg);
+  }
+
+  /* ===== Reduced motion ===== */
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
   }
 }
