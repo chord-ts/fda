@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="heroTitle heroDesc">
+  <title id="heroTitle">FDA — Fractal Domain Architecture</title>
+  <desc id="heroDesc">Домен cart со слоями UI, Server, Controller, RPC и Model; подмодуль items повторяет ту же структуру — фрактальность FDA.</desc>
+
+  <defs>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#086efd"/>
+      <stop offset="0.55" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="400" rx="24" fill="#0B0E14"/>
+
+  <!-- Title block -->
+  <text x="64" y="98" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" letter-spacing="2.5" fill="#3B82F6">АРХИТЕКТУРА · SVELTEKIT · NEXT.JS · NUXT</text>
+  <text x="60" y="224" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="130" font-weight="700" letter-spacing="2" fill="#F5F7FA">FDA</text>
+  <rect x="66" y="242" width="122" height="6" rx="3" fill="url(#accent)"/>
+  <text x="64" y="290" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="30" fill="#8A94A6">Fractal Domain Architecture</text>
+  <text x="64" y="332" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="23" font-weight="600" fill="#F5F7FA">Код вокруг бизнеса, а не вокруг типов файлов.</text>
+  <text x="64" y="362" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="20" fill="#8A94A6">Одинаковые слои и контракты внутри каждого домена.</text>
+
+  <!-- Domain tree card -->
+  <rect x="668" y="48" width="468" height="304" rx="14" fill="#12161F" stroke="#2A3242" stroke-width="1.5"/>
+  <circle cx="692" cy="76" r="4" fill="#2A3242"/>
+  <circle cx="708" cy="76" r="4" fill="#2A3242"/>
+  <circle cx="724" cy="76" r="4" fill="#2A3242"/>
+  <text x="744" y="83" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" fill="#F5F7FA">src/routes/cart/</text>
+  <line x1="684" y1="102" x2="1120" y2="102" stroke="#1F2632" stroke-width="1.5"/>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" fill="#F5F7FA">
+    <text x="688" y="134"><tspan fill="#5A6478">├─ </tspan>+page.svelte</text>
+    <text x="688" y="168"><tspan fill="#5A6478">├─ </tspan>+page.server.ts</text>
+    <text x="688" y="202"><tspan fill="#5A6478">├─ </tspan>stores.ts</text>
+    <text x="688" y="236"><tspan fill="#5A6478">├─ </tspan>rpc.ts</text>
+    <text x="688" y="270"><tspan fill="#5A6478">├─ </tspan>model.server.ts</text>
+    <text x="688" y="304"><tspan fill="#5A6478">└─ </tspan>items/</text>
+    <text x="688" y="336" font-size="18" fill="#8A94A6">↳ repo — в lib/server/repo/</text>
+  </g>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" letter-spacing="1" fill="#3B82F6" text-anchor="end">
+    <text x="1120" y="134">UI</text>
+    <text x="1120" y="168">SERVER</text>
+    <text x="1120" y="202">CONTROLLER</text>
+    <text x="1120" y="236">RPC</text>
+    <text x="1120" y="270">MODEL</text>
+    <text x="1120" y="304">▼ ТА ЖЕ СТРУКТУРА</text>
+  </g>
+</svg>

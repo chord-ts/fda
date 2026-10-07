@@ -3,7 +3,7 @@ title: "FDA (Fractal Domain Architecture)"
 description: "Документация по архитектуре фрактальных доменов для масштабируемых приложений"
 tableOfContents: false
 hero:
-  tagline: Фрактальная архитектура для современных приложений
+  tagline: Код вокруг бизнеса, а не вокруг типов файлов
   image:
     dark: ../../assets/logo.png
     light: ../../assets/logo.png
@@ -19,20 +19,22 @@ hero:
 
 import { Card, CardGrid } from "@astrojs/starlight/components";
 
+FDA организует приложение вокруг бизнес-доменов: `cart`, `auth`, `dashboard`. Внутри каждого домена — одинаковый набор слоёв и файлов с предсказуемыми ролями. Структура повторяется от компонента до всего приложения, поэтому проект растёт, не превращаясь в кашу.
+
 ## Основные принципы
 
 <CardGrid stagger>
   <Card title="Фрактальность" icon="left-caret">
-    Одинаковая структура на всех уровнях: компоненты → подмодули → домены → приложения
+    Одинаковая структура на всех уровнях: компонент → подмодуль → домен. Открыв любой модуль, вы уже знаете, где что лежит
   </Card>
   <Card title="Разделение на слои" icon="down-caret">
-    Четкое разделение: репозитории → модель → контроллер → UI
+    repo → model → RPC → контроллер → UI. Импорты смотрят только вниз — серверный код не утекает в браузер
   </Card>
   <Card title="Явные контракты" icon="approve-check-circle">
-    Каждый файл имеет строго определенную роль и набор экспортов
+    Каждый файл — одна роль и один набор экспортов. Нарушение бросается в глаза на ревью
   </Card>
   <Card title="Framework-agnostic" icon="astro">
-    Архитектура независима от фреймворка (Astro/SvelteKit/React/Vue)
+    SvelteKit, Next.js и Nuxt: меняются имена файлов, а слои и контракты остаются теми же
   </Card>
 </CardGrid>
 
@@ -41,35 +43,37 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
 <div class="docs-grid">
   <a href="/01-introduction/" class="doc-card">
     <h3>01. Введение</h3>
-    <p>Основы FDA и зачем она нужна</p>
+    <p>Проблема, которую решает FDA, и для каких проектов она подходит</p>
   </a>
   <a href="/02-core-concepts/" class="doc-card">
     <h3>02. Основные концепции</h3>
-    <p>Фрактальность, слои и контракты</p>
+    <p>Фрактальность, слои и контракты — фундамент, на котором держится всё</p>
   </a>
   <a href="/03-project-structure/" class="doc-card">
     <h3>03. Структура проекта</h3>
-    <p>Организация файлов и папок</p>
+    <p>Полное дерево каталогов и правила выбора места для нового кода</p>
   </a>
   <a href="/04-domains-submodules/" class="doc-card">
     <h3>04. Домены и подмодули</h3>
-    <p>Фрактальная организация кода</p>
+    <p>Фрактальная организация и взаимодействие между модулями</p>
   </a>
   <a href="/05-file-contracts/" class="doc-card">
     <h3>05. Контракты файлов</h3>
-    <p>Роли и экспорт каждого файла</p>
+    <p>Роль и экспорты каждого файла — с примерами из живого кода</p>
   </a>
   <a href="/06-faq-checklist/" class="doc-card">
     <h3>06. FAQ и Checklist</h3>
-    <p>Частые вопросы и проверки</p>
+    <p>Частые вопросы и чеклист проверки модуля перед мержем</p>
   </a>
   <a href="/07-qwen-code-skill/" class="doc-card">
     <h3>07. Скилл для AI-агентов</h3>
-    <p>Архитектурный ассистент для AI</p>
+    <p>Правила FDA в виде скилла для Qwen Code, Claude Code и других агентов</p>
   </a>
 </div>
 
 ## 🧪 Примеры
+
+Сквозной пример документации — домен `cart`: корзина товаров с полным набором слоёв. Его код используется во всех разделах.
 
 <div class="examples-grid">
   <a href="https://github.com/chord-ts/fda/tree/main/apps/example-sveltekit" class="example-card" target="_blank">
@@ -88,3 +92,9 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
     <span class="badge" data-color="yellow">Скоро</span>
   </a>
 </div>
+
+## 🤖 Работаете с AI-агентами?
+
+Qwen Code и Claude Code могут писать FDA-код сами: устанавливаемый скилл учит агента собирать домены по контракту, ловить нарушения слоёв и адаптировать правила под ваш стек.
+
+→ [Скилл FDA для AI-агентов](/07-qwen-code-skill/)

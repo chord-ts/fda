@@ -1,118 +1,319 @@
 ---
 title: "Контракты файлов"
-description: "Строгое определение ролей и экспортов для каждого файла"
+description: "Роль и экспорты каждого файла в домене — с примерами из живого кода"
 ---
 
-### Детализация слоев:
+import { Aside } from "@astrojs/starlight/components";
+
+# Контракты файлов
+
+Контракт файла — это его роль: одна на файл, с фиксированным набором экспортов. `model.server.ts` — только операции с данными, `types.ts` — только типы, `policy.ts` — только правила доступа.
+
+Контракты решают три задачи. **Поиск:** зная роль, вы находите код по имени файла, а не полнотекстовым поиском. **Ревью:** нарушение видно сразу — логика в `constants.ts` бросается в глаза, даже не читая дифф. **Генерация:** агент с [скиллом FDA](/07-qwen-code-skill/) знает, какой файл создавать и что в него писать, — и не перемешивает слои.
+
 ![Структура домена](/domain.png)
 
+## 🗂️ Сводная таблица
 
-## 📄 Явные контракты (File Contracts)
+| Файл | Слой | Экспортирует |
+|------|------|--------------|
+| `schema.ts` | Model | Таблицы ORM |
+| `model.server.ts` | Model | Функции операций с данными |
+| `rpc.ts` | RPC | API для других доменов |
+| `+server.ts` | RPC | HTTP-обработчики |
+| `client.ts` | RPC | Fetch-обёртки для браузера |
+| `controller.svelte.ts` / `stores.ts` | Controller | Реактивное состояние и обработчики |
+| `+page.server.ts` | Controller | `load` и `actions` |
+| `+page.svelte` | UI | — |
+| `ui/` | UI | Компоненты модуля |
+| `types.ts` | — | Типы и интерфейсы |
+| `constants.ts` | — | Константы и enum |
+| `policy.ts` | — | Правила доступа |
+| `templates.ts` | — | Шаблоны форм и валидация |
+| `utils.ts` | — | Хелперы модуля |
+| `index.ts` | — | Реэкспорт публичного API |
 
-Каждый файл внутри домена имеет **строго определённую роль и набор экспортов**:
+Разберём каждый контракт. Примеры кода взяты из живого домена `cart` [рабочего примера](https://github.com/chord-ts/fda/tree/main/apps/example-sveltekit) — имена файлов приведены для SvelteKit.
 
-### Для чего нужен каждый файл и что он экспортирует:
+## 📄 Контракты по слоям
 
-#### `schema.ts` (пример на Drizzle ORM)
-```typescript
-// Строго: только схемы для ORM
-// Никакой логики, только декларативное описание сущностей
-export const users = pgTable(...)
-export const posts = pgTable(...)
+### `schema.ts` — описание сущностей
+
+Декларативное описание таблиц ORM (Drizzle, Prisma). Никакой логики — только структура:
+
+```ts
+// lib/server/repo/db/schema.ts — пример на Drizzle
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+
+export const users = pgTable("users", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    email: text("email").unique().notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+});
 ```
 
-#### `model.server.ts`
-```typescript
-// Бизнес-логика работы с данными через repo
-// Экспортирует операции, процессы, транзакции
-export const getUserById = async (id: string) => { ... }
-export const createUser = async (data: CreateUserInput) => { ... }
+❌ Не сюда: функции работы с данными — их место в `model.server.ts`.
+
+### `model.server.ts` — операции с данными
+
+Бизнес-правила домена над данными: каждый метод дёргает repo и возвращает готовые доменные объекты. Не знает ни про HTTP, ни про интерфейс:
+
+```ts
+// routes/cart/model.server.ts
+import { db } from "$lib/server/repo/db.mock";
+import type { Cart, CartItem } from "./types";
+
+export async function getCart(): Promise<Cart> {
+    const items = await db.table<CartItem & { id: string }>("cart_items").findMany();
+    return calculateCart(items);
+}
+
+function calculateCart(items: (CartItem & { id: string })[]): Cart {
+    const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const totalCount = items.reduce((sum, i) => sum + i.quantity, 0);
+    return { items, total, totalCount };
+}
 ```
 
-#### `rpc.ts`
-```typescript
-// Обслуживание запросов, применение моделей, хендлинг ошибок
-// Экспортирует ручки/эндпоинты для фронтенда и других потребителей
-export const authenticateUser = async (credentials: Credentials) => { ... }
-export const generateToken = async (userId: string) => { ... }
+Модель вызывают из load-функции, из RPC или из фонового скрипта — результат одинаков. ❌ Не сюда: HTTP-обработчики и реактивное состояние.
+
+### `rpc.ts` — API для других доменов
+
+Публичный контракт модуля: соседние домены импортируют только отсюда. Каждый обработчик валидирует вход и вызывает одну функцию модели:
+
+```ts
+// routes/cart/rpc.ts
+import { getCart } from "./model.server";
+import type { Cart } from "./types";
+
+export async function getCartForOrder(): Promise<Cart> {
+    return getCart();
+}
 ```
 
-#### `state.ts` / `stores.ts`
-```typescript
-// Работа с UI-состоянием
-// Экспортирует реактивные stores и обработчики ввода
-export const userStore = derived(...)
-export const navigateToProfile = (userId: string) => { ... }
+❌ Не сюда: доступ к UI, экспорт «всего подряд» — внешний API должен быть узким и стабильным.
+
+### `+server.ts` — HTTP-роут
+
+Принимает запросы браузера, парсит тело, выбирает метод модели, возвращает JSON. Никакой бизнес-логики:
+
+```ts
+// routes/cart/+server.ts
+import { json } from "@sveltejs/kit";
+import * as model from "./model.server";
+
+export const POST = async ({ request }) => {
+    const body = await request.json();
+    switch (body.action) {
+        case "add":
+            return json(await model.addToCart(body.productId, body.quantity ?? 1));
+        case "remove":
+            return json(await model.removeFromCart(body.itemId));
+        default:
+            return json({ error: "Unknown action" }, { status: 400 });
+    }
+};
 ```
 
-#### `+page.svelte` / `index.vue` / `page.tsx`
-```tsx
-// Непосредственный UI с версткой
-// Ничего не экспортируем, применяем state/stores 
-import { userStore, navigateToProfile } from './stores.ts'
-...
-<button on:click={navigateToProfile}>...</button
+❌ Не сюда: расчёты и правила — они в модели.
+
+### `client.ts` — вызовы из браузера
+
+Тонкая обёртка над `fetch`: знает адреса только своего модуля, типов не теряет:
+
+```ts
+// routes/cart/client.ts
+import type { Cart } from "./types";
+
+export async function removeFromCart(itemId: string): Promise<Cart> {
+    const res = await fetch("/cart", {
+        method: "POST",
+        body: JSON.stringify({ action: "remove", itemId }),
+    });
+    return res.json();
+}
 ```
 
-#### `policy.ts`
-```typescript
-// Описание политик авторизации
-// Экспортирует правила доступа
-export const canEditUser = (user: User, target: User) => { ... }
-export const policy = { ... }
+❌ Не сюда: обработка ошибок интерфейса и состояние — это контроллер.
+
+### `controller.svelte.ts`, `stores.ts`, `state.ts` — реактивное состояние
+
+Три имени — одна роль: хранить состояние модуля и реагировать на действия пользователя. Выбор имени зависит от фреймворка и версии: `controller.svelte.ts` для рунов Svelte 5, `stores.ts` для классических сторов, `composables.ts` в Nuxt.
+
+```ts
+// routes/cart/stores.ts — Svelte 4 stores
+import { writable, derived } from "svelte/store";
+import * as client from "./client";
+import type { Cart } from "./types";
+
+export const cart = writable<Cart>({ items: [], total: 0, totalCount: 0 });
+export const isEmpty = derived(cart, ($cart) => $cart.items.length === 0);
+
+export async function removeItem(itemId: string) {
+    const updated = await client.removeFromCart(itemId);
+    cart.set(updated);
+}
 ```
 
-#### `utils.ts`
-```typescript
-// Вспомогательные функции модуля
-// Экспортирует утилиты, не подходящие в другие категории
-export const formatUserDisplay = (user: User) => { ... }
+Контроллер дёргает `client.ts`, обновляет сторы — разметка перерисовывается сама. ❌ Не сюда: импорты repo и серверной модели — иначе секреты окажутся в браузере.
+
+### `+page.server.ts` — серверная часть страницы
+
+`load` отдаёт начальные данные при заходе на URL, `actions` принимает отправку форм. Файл создавайте, даже если он пустой, — точка входа для серверных данных пригодится:
+
+```ts
+// routes/cart/+page.server.ts
+import { getCart } from "./model.server";
+
+export const load = async () => {
+    const cart = await getCart();
+    return { cart };
+};
 ```
 
-#### `constants.ts`
-```typescript
-// Константы и enum
-// Экспортирует только const/enum
-export const USER_ROLES = { ADMIN: 'admin', USER: 'user' }
-export const MAX_UPLOAD_SIZE = 1024 * 1024 * 5
+❌ Не сюда: разметка и обработчики кликов.
+
+### `+page.svelte` — страница
+
+Только отображение. Данные — из `data` (их подготовил load), состояние — из контроллера, никаких fetch и расчётов:
+
+```svelte
+<!-- routes/cart/+page.svelte -->
+<script lang="ts">
+    import { cart, removeItem, formatPrice } from "./stores";
+
+    let { data } = $props();
+
+    $effect(() => {
+        cart.set(data.cart);
+    });
+</script>
+
+{#each $cart.items as item (item.id)}
+    <div class="cart-item">
+        <div class="name">{item.name}</div>
+        <div class="subtotal">{formatPrice(item.price * item.quantity)}</div>
+        <button onclick={() => removeItem(item.id)}>×</button>
+    </div>
+{/each}
 ```
 
-#### `templates.ts`
-```typescript
-// Шаблоны форм и состояний
-// Экспортирует структуры для formik/yup или аналогов
-export const userFormSchema = object({ ... })
-export const initialFormState = { ... }
+❌ Не сюда: `fetch` в разметке, `import` модели, бизнес-расчёты.
+
+### `ui/` — компоненты модуля
+
+Внутренние компоненты домена: `CartWidget`, `CartItemCard`, `CheckoutForm`. Используются только внутри своего модуля. Компонент понадобился соседям — переезжает в `lib/ui/`.
+
+## 🧰 Вспомогательные контракты
+
+### `types.ts` — типы домена
+
+Только `type` и `interface`:
+
+```ts
+// routes/cart/types.ts
+export interface CartItem {
+    id: string;
+    productId: string;
+    name: string;
+    price: number;
+    image: string;
+    quantity: number;
+}
+
+export interface Cart {
+    items: CartItem[];
+    total: number;
+    totalCount: number;
+}
 ```
 
-#### `types.ts`
-```typescript
-// Типы и интерфейсы
-// Экспортирует только type/interface
-export interface User { ... }
-export type AuthResult = { success: boolean; message?: string }
+❌ Не сюда: константы и функции — только типы.
+
+### `constants.ts` — константы и enum
+
+```ts
+// routes/cart/constants.ts
+export const MAX_ITEM_QUANTITY = 99;
+export const MIN_ITEM_QUANTITY = 1;
 ```
 
-#### `index.ts`
-```typescript
-// Центральный экспорт модуля
-// Экспортирует все экспортируемые API
-export * from './model.server'
-export * from './rpc'
-export * from './controller'
-export * from './constants'
-export * from './types'
+❌ Не сюда: функции и вычисления.
+
+### `policy.ts` — правила доступа
+
+```ts
+// routes/cart/policy.ts
+export const canEditCart = (userId: string, cartOwnerId: string) =>
+    userId === cartOwnerId;
 ```
 
+❌ Не сюда: проверка «кто такой пользователь» — только решения «можно или нельзя».
 
-### Примеры маппинга:
-В зависимости от вашего мета-фреймворка структура и названия папок и файлов могут отличаться. Но это не влияет на общую концепцию 
-| SvelteKit | Next | Nuxt |
-|-----------|-------|-----|
-| `domain/+page.svelte` | `domain/page.tsx` | `domain/index.vue` |
-| `domain/+page.server.ts` | `src/pages/action.ts` | `domain/setup.ts` |
-| `domain/rpc.ts` | `domain/rpc.ts` | `src/pages/.../rpc.ts` |
-| `domain/+server.ts` | `domain/endpoints.ts` | `/server/api/domain/.ts` |
-| `domain/model.ts` | `domain/model.ts` | `domain/model.ts` |
+### `templates.ts` — шаблоны форм
 
----
+Схемы валидации и начальные состояния форм (zod, formik):
+
+```ts
+// routes/cart/templates.ts
+export const addToCartSchema = z.object({
+    productId: z.string(),
+    quantity: z.number().min(1).max(99),
+});
+```
+
+❌ Не сюда: обработка отправки — она в `actions` страницы.
+
+### `utils.ts` — хелперы модуля
+
+Функции, не попавшие в другие контракты: формат цены, генерация id:
+
+```ts
+// routes/cart/utils.ts
+export const formatPrice = (value: number) =>
+    new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" }).format(value);
+```
+
+❌ Не сюда: хелперы для всего проекта — им место в `lib/`.
+
+### `index.ts` — публичный API модуля
+
+Реэкспортирует внешний контракт модуля. Потребители импортируют из папки, а не из внутренних файлов:
+
+```ts
+// routes/cart/index.ts
+export * from "./rpc";
+export * from "./controller";
+export * from "./types";
+export * from "./constants";
+```
+
+❌ Не сюда: реэкспорт `model.server.ts` — серверный код не должен утекать через публичный API.
+
+<Aside type="tip">
+
+Не все файлы обязательны. Минимальный набор домена: страница, серверная её часть, `rpc.ts`, `model.server.ts`, контроллер и `index.ts`. Остальное добавляется по задаче: появились формы — `templates.ts`, появилась авторизация — `policy.ts`. Полный список обязательных и опциональных файлов — в [разделе 07](/07-qwen-code-skill/).
+
+</Aside>
+
+## 🧭 Маппинг на фреймворки
+
+Имена файлов роутинга зависят от мета-фреймворка, роли — нет:
+
+| Концепция | SvelteKit | Next.js | Nuxt |
+|-----------|-----------|---------|------|
+| Страница | `+page.svelte` | `page.tsx` | `index.vue` |
+| Layout | `+layout.svelte` | `layout.tsx` | `layout.vue` |
+| Server load | `+page.server.ts` | `page.server.tsx` | `setup.ts` |
+| Server actions | `+page.server.ts` | `actions.ts` | `server/` |
+| API-роуты | `+server.ts` | `route.ts` | `/server/api/` |
+| RPC | `rpc.ts` | `rpc.ts` | `rpc.ts` |
+| Model | `model.server.ts` | `model.ts` | `model.ts` |
+
+RPC и модель называются одинаково везде — это ядро переносимости FDA.
+
+## 🔗 Следующие шаги
+
+→ [FAQ и чеклист](/06-faq-checklist/) — проверка модуля перед мержем
+
+→ [Скилл для AI-агентов](/07-qwen-code-skill/) — те же контракты в виде инструкций для агента
